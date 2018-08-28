@@ -873,7 +873,6 @@ bool send_nmea(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
   * This way, we still send no_fix messages when receiver clock is drifting. */
   u32 soln_period_ms = (u32)(1.0 / soln_freq * 1e3);
   u32 output_period_ms = (u32)soln_period_ms * rate;
-  //printf("%d %d %d %d %d\n",gps_tow_ms,soln_period_ms,output_period_ms,((gps_tow_ms) % output_period_ms),(soln_period_ms / 2));
   if (((gps_tow_ms) % output_period_ms) < (soln_period_ms / 2)) {
     return true;
   }
