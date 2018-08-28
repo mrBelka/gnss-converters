@@ -70,7 +70,8 @@ void rtcm2sbp_init(struct rtcm3_sbp_state *state,
   rtcm_init_logging(&rtcm_log_callback_fn, state);
 }
 
-static void normalize_gps_time(gps_time_sec_t *t) {
+static void normalize_gps_time(gps_time_sec_t *t)
+{
   /* note that tow is unsigned so no need to check tow<0 */
 
   while (t->tow >= SEC_IN_WEEK) {
