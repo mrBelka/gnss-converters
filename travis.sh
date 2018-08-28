@@ -20,6 +20,8 @@ function build_c() {
     cd build
     cmake ../
     make -j8 VERBOSE=1
+    make clang-format-all && check_format_errors
+    make clang-tidy-all && check_tidy_errors
     cd ../
     cd ../
 }
