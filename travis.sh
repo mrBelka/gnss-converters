@@ -1,9 +1,10 @@
 #!/bin/bash
 
+# Copyright (C) 2018 Swift Navigation Inc.
+# Contact: Swift Navigation <dev@swiftnav.com>
 # Run Travis setup
 
-set -e
-set -x
+set -ex
 set -o errexit
 set -o pipefail
 
@@ -23,5 +24,10 @@ function build_c() {
     cd ../
 }
 
-build_c
-build_haskell
+if [ "$TESTENV" == "lint" ]; then
+  ./travis-clang-format-check.sh
+else
+  build_c
+  build_haskell
+fi
+

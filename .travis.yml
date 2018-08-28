@@ -8,9 +8,6 @@ addons:
     sources:
       - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.8 main'
         key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
-    packages:
-    - libgmp-dev
-    - check
 
 cache:
   apt: true
@@ -19,10 +16,10 @@ cache:
 
 before_install:
   # Install stack
-  - mkdir -p $HOME/.local/bin $HOME/.local/include $HOME/.local/lib
-  - export PATH=~/.local/bin:$PATH
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.local/lib
-  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+#  - mkdir -p $HOME/.local/bin $HOME/.local/include $HOME/.local/lib
+#  - export PATH=~/.local/bin:$PATH
+#  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.local/lib
+#  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
   # Travis' version of CMake is too old for some reason, and the only
   # PPA for Ubuntu trusty disappeared sometime around 3 October 2016.
   # So instead, we install a reasonably recent version from a PPA for
@@ -32,13 +29,33 @@ before_install:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 084ECFC5828AB726
   - sudo apt-get update
   - sudo apt-get install cmake
-  # Install the required libsbp library
-  - git clone https://github.com/swift-nav/libsbp.git
-  - mkdir libsbp/c/build
-  - cd libsbp/c/build
-  - cmake ../
-  - sudo make install
-  - cd ../../../
+
+# **********************************************************************
+# BUILD MATRIX:
+# **********************************************************************
+matrix:
+  # Non-critical matrix entries will not block build completion.
+  fast_finish: true
+   # Enumerate all builds and their dependencies.
+  include:
+    # ------------------------------------------------------------------
+    # Unit and integration test builds with GCC.
+    # ------------------------------------------------------------------
+     # GCC 6 / Unit Test.
+    - env: COMPILER=gcc-6 TEST_SUITE=unit
+      addons: { apt: { packages: ["g++-6", "check", "stack"],
+                       sources: ["ubuntu-toolchain-r-test"] } }
+    # ------------------------------------------------------------------
+    # Lint and check compilation builds with Clang
+    # ------------------------------------------------------------------
+     # CLANG / Lint
+    - env: COMPILER=clang-3.8 TEST_SUITE=lint
+      addons: { apt: { packages: ["clang-3.8",
+                                  "clang-tidy-3.8",
+                                  "clang-format-3.8",
+                                  "libc++-dev",
+                                  "libc++abi-dev"],
+                       sources: ["llvm-toolchain-trusty-3.8"] } }
 
 script:
   - bash ./travis.sh
