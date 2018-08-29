@@ -45,12 +45,12 @@
 
 //void nmea_setup(void);
 bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq);
-void nmea_gpgga(const struct sbp_nmea_state *state);
-void nmea_gprmc(const struct sbp_nmea_state *state);
-void nmea_gpvtg(const struct sbp_nmea_state *state);
-void nmea_gpgll(const struct sbp_nmea_state *state);
-void nmea_gpzda(const struct sbp_nmea_state *state);
-void nmea_gsa(const struct sbp_nmea_state *state);
+void send_gpgga(const struct sbp_nmea_state *state);
+void send_gprmc(const struct sbp_nmea_state *state);
+void send_gpvtg(const struct sbp_nmea_state *state);
+void send_gpgll(const struct sbp_nmea_state *state);
+void send_gpzda(const struct sbp_nmea_state *state);
+void send_gsa(const struct sbp_nmea_state *state);
 char get_nmea_status(u8 flags);
 char get_nmea_mode_indicator(u8 flags);
 u8 get_nmea_quality_indicator(u8 flags);

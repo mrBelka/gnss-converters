@@ -83,32 +83,32 @@ void check_nmea_send(struct sbp_nmea_state *state) {
   /* Check collaborative time stamps for all messages */
   if(gpgga_ready(state)) {
     if(check_nmea_rate(state->gpgga_rate,state->sbp_gps_time.tow,state->soln_freq)) {
-      nmea_gpgga(state);
+      send_gpgga(state);
     }
   }
   if(gsa_ready(state)) {
     if(check_nmea_rate(state->gsa_rate,state->obs_time.tow,state->soln_freq)) {
-      nmea_gsa(state);
+      send_gsa(state);
     }
   }
   if(gprmc_ready(state)) {
     if(check_nmea_rate(state->gprmc_rate,state->sbp_gps_time.tow,state->soln_freq)) {
-      nmea_gprmc(state);
+      send_gprmc(state);
     }
   }
   if(gpvtg_ready(state)) {
     if(check_nmea_rate(state->gpvtg_rate,state->sbp_gps_time.tow,state->soln_freq)) {
-      nmea_gpvtg(state);
+      send_gpvtg(state);
     }
   }
   if(gpgll_ready(state)) {
     if(check_nmea_rate(state->gpgll_rate,state->sbp_gps_time.tow,state->soln_freq)) {
-      nmea_gpgll(state);
+      send_gpgll(state);
     }
   }
   if(gpzda_ready(state)) {
     if(check_nmea_rate(state->gpzda_rate,state->sbp_gps_time.tow,state->soln_freq)) {
-      nmea_gpzda(state);
+      send_gpzda(state);
     }
   }
 }

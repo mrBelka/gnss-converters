@@ -254,7 +254,7 @@ static void get_utc_time_string(const msg_gps_time_t *sbp_msg_time,
  *
  * \param state Current SBP2NMEA state
  */
-void nmea_gpgga(const struct sbp_nmea_state* state) {
+void send_gpgga(const struct sbp_nmea_state* state) {
   /* GGA sentence is formed by splitting latitude and longitude
      into degrees and minutes parts and then printing them separately
      using printf. Before doing the split we want to take care of
@@ -419,7 +419,7 @@ static talker_id_t sid_to_talker_id(const sbp_gnss_signal_t sid) {
  * \param sbp_dops     Pointer to SBP MSG DOP struct (PDOP, HDOP, VDOP).
  * \param talker       Talker ID to use.
  */
-void nmea_gsa_print(u16 *prns,
+void send_gsa_print(u16 *prns,
                     const u8 num_prns,
                     const msg_pos_llh_t *sbp_pos_llh,
                     const msg_dops_t *sbp_dops,
@@ -480,7 +480,7 @@ void nmea_gsa_print(u16 *prns,
  * \param n_meas       Number of measurements
  * \param nav_meas     Array of navigation measurements
  */
-void nmea_gsa(const struct sbp_nmea_state* state) {
+void send_gsa(const struct sbp_nmea_state* state) {
   assert(state);
   const msg_pos_llh_t *sbp_pos = &state->sbp_pos_llh;
   const msg_dops_t *sbp_dops = &state->sbp_dops;
@@ -531,7 +531,7 @@ void nmea_gsa(const struct sbp_nmea_state* state) {
   /* Check if no SVs identified */
   if (0 == constellations) {
     /* At bare minimum, print empty GPGSA and be done with it */
-    nmea_gsa_print(
+    send_gsa_print(
         prns[TALKER_ID_GP], num_prns[TALKER_ID_GP], sbp_pos, sbp_dops, "GP", state);
     return;
   }
@@ -546,7 +546,7 @@ void nmea_gsa(const struct sbp_nmea_state* state) {
       continue;
     }
 
-    nmea_gsa_print(prns[i],
+    send_gsa_print(prns[i],
                    num_prns[i],
                    sbp_pos,
                    sbp_dops,
@@ -596,7 +596,7 @@ static void calc_cog_sog(const msg_vel_ned_t *sbp_vel_ned,
  * \param sbp_msg_time Pointer to sbp gps time struct
  * \param utc_time     Pointer to UTC time
  */
-void nmea_gprmc(const struct sbp_nmea_state *state) {
+void send_gprmc(const struct sbp_nmea_state *state) {
   const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
   const msg_vel_ned_t *sbp_vel_ned = &state->sbp_vel_ned;
   const msg_gps_time_t *sbp_msg_time = &state->sbp_gps_time;
@@ -673,7 +673,7 @@ void nmea_gprmc(const struct sbp_nmea_state *state) {
  *
  * \param sbp_vel_ned Pointer to sbp vel ned struct.
  */
-void nmea_gpvtg(const struct sbp_nmea_state *state) {
+void send_gpvtg(const struct sbp_nmea_state *state) {
   const msg_vel_ned_t *sbp_vel_ned = &state->sbp_vel_ned;
   const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
 
@@ -718,7 +718,7 @@ void nmea_gpvtg(const struct sbp_nmea_state *state) {
  * NMEA HDT contains Heading.
  *
  */
-void nmea_gphdt(const struct sbp_nmea_state *state) {
+void send_gphdt(const struct sbp_nmea_state *state) {
   const msg_baseline_heading_t *sbp_baseline_heading = &state->sbp_heading;
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPHDT,"); /* Command */
@@ -741,7 +741,7 @@ void nmea_gphdt(const struct sbp_nmea_state *state) {
  * \param sbp_msg_time Pointer to sbp gps time struct.
  * \param sbp_utc_time Pointer to sbp UTC time.
  */
-void nmea_gpgll(const struct sbp_nmea_state *state) {
+void send_gpgll(const struct sbp_nmea_state *state) {
   const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
   const msg_gps_time_t *sbp_msg_time = &state->sbp_gps_time;
   const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
@@ -795,7 +795,7 @@ void nmea_gpgll(const struct sbp_nmea_state *state) {
  * \param sbp_msg_time Pointer to the current SBP GPS Time.
  * \param sbp_utc_time Pointer to sbp UTC time
  */
-void nmea_gpzda(const struct sbp_nmea_state *state) {
+void send_gpzda(const struct sbp_nmea_state *state) {
   const msg_gps_time_t *sbp_msg_time = &state->sbp_gps_time;
   const msg_utc_time_t *sbp_utc_time =&state->sbp_utc_time;
 
@@ -810,7 +810,7 @@ void nmea_gpzda(const struct sbp_nmea_state *state) {
   NMEA_SENTENCE_PRINTF(","); /* Time zone */
   NMEA_SENTENCE_DONE(state);
 
-} /* nmea_gpzda() */
+} /* send_gpzda() */
 
 bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
   if (rate == 0) {
