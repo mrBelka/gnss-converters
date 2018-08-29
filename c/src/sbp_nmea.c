@@ -253,35 +253,31 @@ void sbp2nmea_obs(const msg_obs_t *sbp_obs,
   check_nmea_send(state);
 }
 
-void sbp2nmea_gpgga_rate(const int gpgga_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gpgga_rate(const int gpgga_rate, struct sbp_nmea_state *state) {
   state->gpgga_rate = gpgga_rate;
 }
 
-void sbp2nmea_gpgsv_rate(const int gpgsv_rate, struct sbp_nmea_state *state) {
-  state->gpgsv_rate = gpgsv_rate;
-}
-
-void sbp2nmea_gprmc_rate(const int gprmc_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gprmc_rate(const int gprmc_rate, struct sbp_nmea_state *state) {
   state->gprmc_rate = gprmc_rate;
 }
 
-void sbp2nmea_gpvtg_rate(const int gpvtg_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gpvtg_rate(const int gpvtg_rate, struct sbp_nmea_state *state) {
   state->gpvtg_rate = gpvtg_rate;
 }
 
-void sbp2nmea_gphdt_rate(const int gphdt_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gphdt_rate(const int gphdt_rate, struct sbp_nmea_state *state) {
   state->gphdt_rate = gphdt_rate;
 }
 
-void sbp2nmea_gpgll_rate(const int gpgll_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gpgll_rate(const int gpgll_rate, struct sbp_nmea_state *state) {
   state->gpgll_rate = gpgll_rate;
 }
 
-void sbp2nmea_gpzda_rate(const int gpzda_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gpzda_rate(const int gpzda_rate, struct sbp_nmea_state *state) {
   state->gpzda_rate = gpzda_rate;
 }
 
-void sbp2nmea_gsa_rate(const int gsa_rate, struct sbp_nmea_state *state) {
+void sbp2nmea_set_gsa_rate(const int gsa_rate, struct sbp_nmea_state *state) {
   state->gsa_rate = gsa_rate;
 }
 

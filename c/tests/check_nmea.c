@@ -264,13 +264,13 @@ void test_NMEA(const char *filename, void (*cb_sbp_to_nmea)(u8 msg[])) {
   sbp2nmea_init(&state, cb_sbp_to_nmea);
   sbp2nmea_set_base_id(33, &state);
   sbp2nmea_set_soln_freq(10, &state);
-  sbp2nmea_gpgga_rate(1, &state);
-  sbp2nmea_gprmc_rate(10, &state);
-  sbp2nmea_gpvtg_rate(10, &state);
-  /*sbp2nmea_gphdt_rate(1,&state);*/
-  sbp2nmea_gpgll_rate(10, &state);
-  sbp2nmea_gpzda_rate(10, &state);
-  sbp2nmea_gsa_rate(1, &state);
+  sbp2nmea_set_gpgga_rate(1, &state);
+  sbp2nmea_set_gprmc_rate(10, &state);
+  sbp2nmea_set_gpvtg_rate(10, &state);
+  /*sbp2nmea_set_gphdt_rate(1,&state);*/
+  sbp2nmea_set_gpgll_rate(10, &state);
+  sbp2nmea_set_gpzda_rate(10, &state);
+  sbp2nmea_set_gsa_rate(1, &state);
 
   sbp_state_t sbp_state_;
   sbp_init(&sbp_state_, NULL);
