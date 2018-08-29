@@ -8,6 +8,22 @@ set -ex
 set -o errexit
 set -o pipefail
 
+
+#************************************************************************
+# UTILITY FUNCTIONS
+#************************************************************************
+check_format_errors() {
+  if [[ $(git --no-pager diff --name-only HEAD) ]]; then
+    echo "######################################################"
+    echo "####### clang-format warning found! Exiting... #######"
+    echo "######################################################"
+    echo ""
+    echo "This should be formatted locally and pushed again..."
+    git --no-pager diff
+    travis_terminate 1
+  fi
+}
+
 function build_haskell () {
     cd haskell
     stack build --test
@@ -21,7 +37,6 @@ function build_c() {
     cmake ../
     make -j8 VERBOSE=1
     make clang-format-all && check_format_errors
-    make clang-tidy-all && check_tidy_errors
     cd ../
     cd ../
 }
