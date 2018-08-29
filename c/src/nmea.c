@@ -221,7 +221,6 @@ static void get_utc_time_string(const msg_gps_time_t *sbp_msg_time,
 
   if (date) {
     /* Date Stamp */
-
     if (trunc_date) {
       vsnprintf_wrap(&utc_str,
                      buf_end,
@@ -813,7 +812,7 @@ void nmea_gpzda(const struct sbp_nmea_state *state) {
 
 } /* nmea_gpzda() */
 
-bool send_nmea(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
+bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
   if (rate == 0) {
     return false;
   }

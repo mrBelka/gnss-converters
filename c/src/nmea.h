@@ -18,7 +18,6 @@
 #include <swiftnav/common.h>
 #include <swiftnav/gnss_time.h>
 #include <sbp_nmea.h>
-// #include <libswiftnav/swiftnav/single_epoch_solver.h>
 
 /* The "QI" stands for "Quality Indicator" which is the terminology used
    for this field in the NMEA specification. */
@@ -45,7 +44,7 @@
   (sqrt((x) * (x) + (y) * (y) + (z) * (z)) * (3600.0 / 1000.0))
 
 //void nmea_setup(void);
-bool send_nmea(u32 rate, u32 gps_tow_ms, int32_t soln_freq);
+bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq);
 void nmea_gpgga(const struct sbp_nmea_state *state);
 void nmea_gprmc(const struct sbp_nmea_state *state);
 void nmea_gpvtg(const struct sbp_nmea_state *state);

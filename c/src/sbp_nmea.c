@@ -18,7 +18,7 @@
 #include <swiftnav/gnss_time.h>
 #include <swiftnav/constants.h>
 
-bool send_gpgga(struct sbp_nmea_state *state) {
+bool gpgga_ready(struct sbp_nmea_state *state) {
   if(state->sbp_gps_time.tow == state->sbp_pos_llh.tow &&
      state->sbp_gps_time.tow == state->sbp_utc_time.tow &&
      state->sbp_gps_time.tow == state->sbp_dops.tow &&
@@ -30,7 +30,7 @@ bool send_gpgga(struct sbp_nmea_state *state) {
   return false;
 }
 
-bool send_gsa(struct sbp_nmea_state *state) {
+bool gsa_ready(struct sbp_nmea_state *state) {
   if((state->count == state->total - 1) &&
       state->obs_time.tow != state->gsa_last_tow)  {
     state->gsa_last_tow = state->obs_time.tow;
@@ -40,7 +40,7 @@ bool send_gsa(struct sbp_nmea_state *state) {
   return false;
 }
 
-bool send_gprmc(struct sbp_nmea_state *state) {
+bool gprmc_ready(struct sbp_nmea_state *state) {
   if(state->sbp_gps_time.tow == state->sbp_pos_llh.tow &&
      state->sbp_gps_time.tow == state->sbp_utc_time.tow &&
      state->sbp_gps_time.tow == state->sbp_vel_ned.tow &&
@@ -51,7 +51,7 @@ bool send_gprmc(struct sbp_nmea_state *state) {
   return false;
 }
 
-bool send_gpvtg(struct sbp_nmea_state *state) {
+bool gpvtg_ready(struct sbp_nmea_state *state) {
   if(state->sbp_pos_llh.tow == state->sbp_vel_ned.tow &&
      state->sbp_pos_llh.tow != state->gpvtg_last_tow) {
      state->gpvtg_last_tow = state->sbp_pos_llh.tow;
@@ -60,7 +60,7 @@ bool send_gpvtg(struct sbp_nmea_state *state) {
   return false;
 }
 
-bool send_gpgll(struct sbp_nmea_state *state) {
+bool gpgll_ready(struct sbp_nmea_state *state) {
   if(state->sbp_gps_time.tow == state->sbp_pos_llh.tow &&
      state->sbp_gps_time.tow == state->sbp_utc_time.tow &&
      state->sbp_gps_time.tow != state->gpgll_last_tow) {
@@ -70,7 +70,7 @@ bool send_gpgll(struct sbp_nmea_state *state) {
   return false;
 }
 
-bool send_gpzda(struct sbp_nmea_state *state) {
+bool gpzda_ready(struct sbp_nmea_state *state) {
   if(state->sbp_gps_time.tow == state->sbp_utc_time.tow &&
      state->sbp_gps_time.tow != state->gpzda_last_tow) {
      state->gpzda_last_tow = state->sbp_gps_time.tow;
@@ -81,33 +81,33 @@ bool send_gpzda(struct sbp_nmea_state *state) {
 
 void check_nmea_send(struct sbp_nmea_state *state) {
   /* Check collaborative time stamps for all messages */
-  if(send_gpgga(state)) {
-    if(send_nmea(state->gpgga_rate,state->sbp_gps_time.tow,state->soln_freq)) {
+  if(gpgga_ready(state)) {
+    if(check_nmea_rate(state->gpgga_rate,state->sbp_gps_time.tow,state->soln_freq)) {
       nmea_gpgga(state);
     }
   }
-  if(send_gsa(state)) {
-    if(send_nmea(state->gsa_rate,state->obs_time.tow,state->soln_freq)) {
+  if(gsa_ready(state)) {
+    if(check_nmea_rate(state->gsa_rate,state->obs_time.tow,state->soln_freq)) {
       nmea_gsa(state);
     }
   }
-  if(send_gprmc(state)) {
-    if(send_nmea(state->gprmc_rate,state->sbp_gps_time.tow,state->soln_freq)) {
+  if(gprmc_ready(state)) {
+    if(check_nmea_rate(state->gprmc_rate,state->sbp_gps_time.tow,state->soln_freq)) {
       nmea_gprmc(state);
     }
   }
-  if(send_gpvtg(state)) {
-    if(send_nmea(state->gpvtg_rate,state->sbp_gps_time.tow,state->soln_freq)) {
+  if(gpvtg_ready(state)) {
+    if(check_nmea_rate(state->gpvtg_rate,state->sbp_gps_time.tow,state->soln_freq)) {
       nmea_gpvtg(state);
     }
   }
-  if(send_gpgll(state)) {
-    if(send_nmea(state->gpgll_rate,state->sbp_gps_time.tow,state->soln_freq)) {
+  if(gpgll_ready(state)) {
+    if(check_nmea_rate(state->gpgll_rate,state->sbp_gps_time.tow,state->soln_freq)) {
       nmea_gpgll(state);
     }
   }
-  if(send_gpzda(state)) {
-    if(send_nmea(state->gpzda_rate,state->sbp_gps_time.tow,state->soln_freq)) {
+  if(gpzda_ready(state)) {
+    if(check_nmea_rate(state->gpzda_rate,state->sbp_gps_time.tow,state->soln_freq)) {
       nmea_gpzda(state);
     }
   }
