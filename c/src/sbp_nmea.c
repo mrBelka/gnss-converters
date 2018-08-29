@@ -195,7 +195,7 @@ void unpack_obs_header(const observation_header_t *header,
                        u8 *total,
                        u8 *count) {
   obs_time->wn = header->t.wn;
-  obs_time->tow = ((double)header->t.tow) / 1e3 + ((double)header->t.ns_residual) / 1e9;
+  obs_time->tow = round(((double)header->t.tow) / 1e3 + ((double)header->t.ns_residual) / 1e9);
   sbp_normalize_gps_time(obs_time);
   *total = (header->n_obs >> MSG_OBS_HEADER_SEQ_SHIFT);
   *count = (header->n_obs & MSG_OBS_HEADER_SEQ_MASK);

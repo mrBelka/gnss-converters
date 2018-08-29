@@ -18,20 +18,11 @@
 #include <string.h>
 
 #include "nmea.h"
-//#include "piksi_systime.h"
 #include <sbp_nmea_internal.h>
 #include <swiftnav/pvt_result.h>
 #include <swiftnav/signal.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/array_tools.h>
-
-// static u32 gpgsv_msg_rate = 10;
-// static u32 gprmc_msg_rate = 10;
-// static u32 gpvtg_msg_rate = 1;
-// static u32 gphdt_msg_rate = 1;
-// static u32 gpgll_msg_rate = 10;
-// static u32 gpzda_msg_rate = 10;
-// static u32 gsa_msg_rate = 10;
 
 /** \addtogroup io
  * \{ */
@@ -125,23 +116,8 @@ typedef enum talker_id_e {
  * \param size This is the C-string size, not including the null character
  */
 static void nmea_output(const struct sbp_nmea_state *state, char *sentence) {
-  //static MUTEX_DECL(send_mutex);
-  //chMtxLock(&send_mutex);
   state->cb_sbp_to_nmea(sentence);
-
-  //chMtxUnlock(&send_mutex);
 }
-//
-// void nmea_setup(void) {
-//   SETTING("nmea", "gpgga_msg_rate", gpgga_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gpgsv_msg_rate", gpgsv_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gprmc_msg_rate", gprmc_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gpvtg_msg_rate", gpvtg_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gphdt_msg_rate", gphdt_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gpgll_msg_rate", gpgll_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gpzda_msg_rate", gpzda_msg_rate, TYPE_INT);
-//   SETTING("nmea", "gsa_msg_rate", gsa_msg_rate, TYPE_INT);
-// }
 
 /** Calculate and append the checksum of an NMEA sentence.
  * Calculates the bitwise XOR of the characters in a string until the end of
@@ -580,23 +556,6 @@ void nmea_gsa(const struct sbp_nmea_state* state) {
   }
 }
 
-/** Helper function for nmea_gsv for comparing sids.
- *
- * \param[in] a     ptr to left side sid
- * \param[in] b     ptr to right side sid
- *
- * Return values:
- *   <0 The element pointed to by a goes before the element pointed to by b
- *   0  The element pointed to by a is equivalent to the element pointed to by b
- *   >0 The element pointed to by a goes after the element pointed to by b
- */
-// int compare_ch_meas(const void *a, const void *b) {
-//   const channel_measurement_t **ca = (const channel_measurement_t **)a;
-//   const channel_measurement_t **cb = (const channel_measurement_t **)b;
-//
-//   return nmea_get_id((*ca)->sid) - nmea_get_id((*cb)->sid);
-// }
-
 /** Calculate Course and Speed Over Ground values.
  *
  * \param[in]  sbp_vel_ned  pointer to sbp vel ned struct
@@ -853,15 +812,6 @@ void nmea_gpzda(const struct sbp_nmea_state *state) {
   NMEA_SENTENCE_DONE(state);
 
 } /* nmea_gpzda() */
-
-// /** Generate and send periodic GPGSV and GLGSV.
-//  *
-//  * \param[in] n_used      size of ch_meas
-//  * \param[in] ch_meas     array of channel_measurement structs from tracked SVs
-//  */
-// void nmea_send_gsv(u8 n_used, const channel_measurement_t *ch_meas) {
-//   DO_EVERY(gpgsv_msg_rate, nmea_gsv(n_used, ch_meas));
-// }
 
 bool send_nmea(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
   if (rate == 0) {
