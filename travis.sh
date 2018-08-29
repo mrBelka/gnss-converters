@@ -41,10 +41,9 @@ function build_c() {
     cd ../
 }
 
-if [ "$TESTENV" == "lint" ]; then
+if [ "$TEST_SUITE" == "lint" ]; then
   ./c/travis-clang-format-check.sh
 else
   build_c
   build_haskell
 fi
-
