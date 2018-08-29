@@ -10,10 +10,10 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define TIME_SOURCE_MASK 0x07 /* Bits 0-2 */
-#define POSITION_MODE_MASK 0x07 /* Bits 0-2 */
+#define TIME_SOURCE_MASK 0x07       /* Bits 0-2 */
+#define POSITION_MODE_MASK 0x07     /* Bits 0-2 */
 #define OBSERVATION_VALID 0x1000000 /* Bits 0-7 */
-#define NO_TIME          0
+#define NO_TIME 0
 #define TOW_INVALID 0xFFFFFFFF
 
 #define MSG_OBS_HEADER_SEQ_SHIFT 4u

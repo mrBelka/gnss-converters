@@ -17,10 +17,10 @@
 extern "C" {
 #endif
 
-#include <libsbp/observation.h>
-#include <libsbp/navigation.h>
-#include <libsbp/orientation.h>
 #include <libsbp/gnss.h>
+#include <libsbp/navigation.h>
+#include <libsbp/observation.h>
+#include <libsbp/orientation.h>
 
 /* Max number of sats visible in an epoch */
 #define MAX_SATS 256
@@ -65,23 +65,32 @@ struct sbp_nmea_state {
   void (*cb_sbp_to_nmea)();
 };
 
-void sbp2nmea_gps_time(const msg_gps_time_t *sbp_gps_time, struct sbp_nmea_state *state);
+void sbp2nmea_gps_time(const msg_gps_time_t *sbp_gps_time,
+                       struct sbp_nmea_state *state);
 
-void sbp2nmea_utc_time(const msg_utc_time_t *sbp_utc_time, struct sbp_nmea_state *state);
+void sbp2nmea_utc_time(const msg_utc_time_t *sbp_utc_time,
+                       struct sbp_nmea_state *state);
 
-void sbp2nmea_pos_llh(const msg_pos_llh_t *sbp_pos_llh, struct sbp_nmea_state *state);
+void sbp2nmea_pos_llh(const msg_pos_llh_t *sbp_pos_llh,
+                      struct sbp_nmea_state *state);
 
-void sbp2nmea_vel_ned(const msg_vel_ned_t *sbp_vel_ned, struct sbp_nmea_state *state);
+void sbp2nmea_vel_ned(const msg_vel_ned_t *sbp_vel_ned,
+                      struct sbp_nmea_state *state);
 
 void sbp2nmea_dops(const msg_dops_t *sbp_dops, struct sbp_nmea_state *state);
 
-void sbp2nmea_age_corrections(const msg_age_corrections_t *sbp_age_corr, struct sbp_nmea_state *state);
+void sbp2nmea_age_corrections(const msg_age_corrections_t *sbp_age_corr,
+                              struct sbp_nmea_state *state);
 
-void sbp2nmea_baseline_heading(const msg_baseline_heading_t *sbp_heading, struct sbp_nmea_state *state);
+void sbp2nmea_baseline_heading(const msg_baseline_heading_t *sbp_heading,
+                               struct sbp_nmea_state *state);
 
-void sbp2nmea_set_base_id(const uint16_t base_sender_id, struct sbp_nmea_state *state);
+void sbp2nmea_set_base_id(const uint16_t base_sender_id,
+                          struct sbp_nmea_state *state);
 
-void sbp2nmea_obs(const msg_obs_t *sbp_obs, uint8_t num_obs, struct sbp_nmea_state *state);
+void sbp2nmea_obs(const msg_obs_t *sbp_obs,
+                  uint8_t num_obs,
+                  struct sbp_nmea_state *state);
 
 void sbp2nmea_gpgga_rate(const int gpgga_rate, struct sbp_nmea_state *state);
 void sbp2nmea_gpgsv_rate(const int gpgsv_rate, struct sbp_nmea_state *state);
@@ -95,7 +104,7 @@ void sbp2nmea_gsa_rate(const int gsa_rate, struct sbp_nmea_state *state);
 void sbp2nmea_set_soln_freq(const int soln_freq, struct sbp_nmea_state *state);
 
 void sbp2nmea_init(struct sbp_nmea_state *state,
-    void (*cb_sbp_to_nmea)(u8 msg_id[]));
+                   void (*cb_sbp_to_nmea)(u8 msg_id[]));
 
 #ifdef __cplusplus
 }

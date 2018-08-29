@@ -17,12 +17,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nmea.h"
 #include <sbp_nmea_internal.h>
+#include <swiftnav/array_tools.h>
+#include <swiftnav/constants.h>
 #include <swiftnav/pvt_result.h>
 #include <swiftnav/signal.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/array_tools.h>
+#include "nmea.h"
 
 /** \addtogroup io
  * \{ */
@@ -104,10 +104,10 @@ typedef enum talker_id_e {
  *       The call to nmea_output has been modified to remove the NULL.
  *       This will also affect all registered dispatchers
  */
-#define NMEA_SENTENCE_DONE(state)                                    \
-  do {                                                               \
-    nmea_append_checksum(sentence_buf, sizeof(sentence_buf));        \
-    nmea_output(state,sentence_buf);                                 \
+#define NMEA_SENTENCE_DONE(state)                             \
+  do {                                                        \
+    nmea_append_checksum(sentence_buf, sizeof(sentence_buf)); \
+    nmea_output(state, sentence_buf);                         \
   } while (0)
 
 /** Output NMEA sentence.
@@ -152,10 +152,8 @@ static void nmea_append_checksum(char *s, size_t size) {
  *  buf_ptr accordingly if there's no encoding error. If buffer is full, sets
  *  buf_ptr to buf_end.
  */
-__attribute__((format(printf, 3, 4))) static void vsnprintf_wrap(char **buf_ptr,
-                           char *buf_end,
-                           const char *format,
-                           ...) {
+__attribute__((format(printf, 3, 4))) static void vsnprintf_wrap(
+    char **buf_ptr, char *buf_end, const char *format, ...) {
   va_list args;
   va_start(args, format);
 
@@ -209,14 +207,15 @@ static void get_utc_time_string(const msg_gps_time_t *sbp_msg_time,
 
   if (time) {
     /* Time (UTC) */
-    vsnprintf_wrap(&utc_str,
-                   buf_end,
-                   "%02u%02u%02u.%0*u,",
-                   sbp_utc_time->hours,
-                   sbp_utc_time->minutes,
-                   sbp_utc_time->seconds,
-                   NMEA_UTC_S_DECIMALS,
-                   (u16)roundf(NMEA_UTC_S_FRAC_DIVISOR * sbp_utc_time->ns * 1e-9));
+    vsnprintf_wrap(
+        &utc_str,
+        buf_end,
+        "%02u%02u%02u.%0*u,",
+        sbp_utc_time->hours,
+        sbp_utc_time->minutes,
+        sbp_utc_time->seconds,
+        NMEA_UTC_S_DECIMALS,
+        (u16)roundf(NMEA_UTC_S_FRAC_DIVISOR * sbp_utc_time->ns * 1e-9));
   }
 
   if (date) {
@@ -254,7 +253,7 @@ static void get_utc_time_string(const msg_gps_time_t *sbp_msg_time,
  *
  * \param state Current SBP2NMEA state
  */
-void send_gpgga(const struct sbp_nmea_state* state) {
+void send_gpgga(const struct sbp_nmea_state *state) {
   /* GGA sentence is formed by splitting latitude and longitude
      into degrees and minutes parts and then printing them separately
      using printf. Before doing the split we want to take care of
@@ -323,9 +322,10 @@ void send_gpgga(const struct sbp_nmea_state* state) {
 
   if ((fix_type == NMEA_GGA_QI_DGPS) || (fix_type == NMEA_GGA_QI_FLOAT) ||
       (fix_type == NMEA_GGA_QI_RTK)) {
-    NMEA_SENTENCE_PRINTF("%.1f,%04d",
-                         sbp_age->age * 0.1,
-                         state->base_sender_id & 0x3FF); /* ID range is 0000 to 1023 */
+    NMEA_SENTENCE_PRINTF(
+        "%.1f,%04d",
+        sbp_age->age * 0.1,
+        state->base_sender_id & 0x3FF); /* ID range is 0000 to 1023 */
   } else {
     NMEA_SENTENCE_PRINTF(",");
   }
@@ -480,7 +480,7 @@ void send_gsa_print(u16 *prns,
  * \param n_meas       Number of measurements
  * \param nav_meas     Array of navigation measurements
  */
-void send_gsa(const struct sbp_nmea_state* state) {
+void send_gsa(const struct sbp_nmea_state *state) {
   assert(state);
   const msg_pos_llh_t *sbp_pos = &state->sbp_pos_llh;
   const msg_dops_t *sbp_dops = &state->sbp_dops;
@@ -531,8 +531,12 @@ void send_gsa(const struct sbp_nmea_state* state) {
   /* Check if no SVs identified */
   if (0 == constellations) {
     /* At bare minimum, print empty GPGSA and be done with it */
-    send_gsa_print(
-        prns[TALKER_ID_GP], num_prns[TALKER_ID_GP], sbp_pos, sbp_dops, "GP", state);
+    send_gsa_print(prns[TALKER_ID_GP],
+                   num_prns[TALKER_ID_GP],
+                   sbp_pos,
+                   sbp_dops,
+                   "GP",
+                   state);
     return;
   }
 
@@ -797,7 +801,7 @@ void send_gpgll(const struct sbp_nmea_state *state) {
  */
 void send_gpzda(const struct sbp_nmea_state *state) {
   const msg_gps_time_t *sbp_msg_time = &state->sbp_gps_time;
-  const msg_utc_time_t *sbp_utc_time =&state->sbp_utc_time;
+  const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
 
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPZDA,"); /* Command */
@@ -817,9 +821,9 @@ bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq) {
     return false;
   }
   /* If the modulo of latest gps time estimate time with configured
-  * output period is less than 1/2 the solution period we should send the NMEA
-  * message.
-  * This way, we still send no_fix messages when receiver clock is drifting. */
+   * output period is less than 1/2 the solution period we should send the NMEA
+   * message.
+   * This way, we still send no_fix messages when receiver clock is drifting. */
   u32 soln_period_ms = (u32)(1.0 / soln_freq * 1e3);
   u32 output_period_ms = (u32)soln_period_ms * rate;
   if (((gps_tow_ms) % output_period_ms) < (soln_period_ms / 2)) {

@@ -15,9 +15,9 @@
 
 #include <libsbp/navigation.h>
 #include <libsbp/orientation.h>
+#include <sbp_nmea.h>
 #include <swiftnav/common.h>
 #include <swiftnav/gnss_time.h>
-#include <sbp_nmea.h>
 
 /* The "QI" stands for "Quality Indicator" which is the terminology used
    for this field in the NMEA specification. */
@@ -43,7 +43,6 @@
 #define MS2KMHR(x, y, z) \
   (sqrt((x) * (x) + (y) * (y) + (z) * (z)) * (3600.0 / 1000.0))
 
-//void nmea_setup(void);
 bool check_nmea_rate(u32 rate, u32 gps_tow_ms, int32_t soln_freq);
 void send_gpgga(const struct sbp_nmea_state *state);
 void send_gprmc(const struct sbp_nmea_state *state);
