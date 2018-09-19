@@ -427,4 +427,3 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
     sbp_bds_eph->toc.wn = rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
     sbp_bds_eph->toc.tow = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION;
 }
-
