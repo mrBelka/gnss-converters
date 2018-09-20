@@ -29,7 +29,7 @@
 #define power2_20 9.536743164062500e-07 /* 2^-20 */
 #define power2_19 1.907348632812500e-06 /* 2^-19 */
 #define power2_11 4.882812500000000e-04 /* 2^-11 */
-#define power2_6  1.5625e-2 /* 2^-6) */
+#define power2_6 1.5625e-2              /* 2^-6) */
 #define power2_5 3.125000000000000e-02  /* 2^-5) */
 
 #define FIRST_SISA_STEP 50
@@ -384,46 +384,53 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
 void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
                           msg_ephemeris_bds_t *sbp_bds_eph,
                           struct rtcm3_sbp_state *state) {
-    /* RTCM gives wn module 1024, so take the current time and mask the lower 10
-     * bits */
-    sbp_bds_eph->common.toe.wn =
-            rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
-    sbp_bds_eph->common.toe.tow = msg_eph->toe * BEIDOU_TOC_RESOLUTION;
-    sbp_bds_eph->common.sid.sat = msg_eph->sat_id;
-    sbp_bds_eph->common.sid.code = CODE_BDS2_B1;
-    sbp_bds_eph->common.ura = convert_bds_ura_to_meters(msg_eph->ura);
-    // Fit interval is hardcoded to 4 hours, as not present in RTCM fields
-    sbp_bds_eph->common.fit_interval = 4 * SEC_IN_HOUR;
-    sbp_bds_eph->common.valid = 1;
-    sbp_bds_eph->common.health_bits = msg_eph->health_bits;
+  /* RTCM gives wn module 1024, so take the current time and mask the lower 10
+   * bits */
+  sbp_bds_eph->common.toe.wn =
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+  u32 tow_ms = msg_eph->toe * BEIDOU_TOC_RESOLUTION * SECS_MS;
+  beidou_tow_to_gps_tow(&tow_ms);
+  compute_gps_message_time(
+      tow_ms, &sbp_bds_eph->common.toe, &state->time_from_rover_obs);
+  sbp_bds_eph->common.sid.sat = msg_eph->sat_id;
+  sbp_bds_eph->common.sid.code = CODE_BDS2_B1;
+  sbp_bds_eph->common.ura = convert_bds_ura_to_meters(msg_eph->ura);
+  // Fit interval is hardcoded to 4 hours, as not present in RTCM fields
+  sbp_bds_eph->common.fit_interval = 4 * SEC_IN_HOUR;
+  sbp_bds_eph->common.valid = 1;
+  sbp_bds_eph->common.health_bits = msg_eph->health_bits;
 
-    sbp_bds_eph->tgd1 = msg_eph->kepler.tgd_bds_s[0] * 1e-10;
-    sbp_bds_eph->tgd2 = msg_eph->kepler.tgd_bds_s[1] * 1e-10;
+  sbp_bds_eph->tgd1 = msg_eph->kepler.tgd_bds_s[0] * 1e-10;
+  sbp_bds_eph->tgd2 = msg_eph->kepler.tgd_bds_s[1] * 1e-10;
 
-    sbp_bds_eph->c_rs = msg_eph->kepler.crs * power2_6;
-    sbp_bds_eph->c_rc = msg_eph->kepler.crc * power2_6;
-    sbp_bds_eph->c_uc = msg_eph->kepler.cuc * power2_31;
-    sbp_bds_eph->c_us = msg_eph->kepler.cus * power2_31;
-    sbp_bds_eph->c_ic = msg_eph->kepler.cic * power2_31;
-    sbp_bds_eph->c_is = msg_eph->kepler.cis * power2_31;
+  sbp_bds_eph->c_rs = msg_eph->kepler.crs * power2_6;
+  sbp_bds_eph->c_rc = msg_eph->kepler.crc * power2_6;
+  sbp_bds_eph->c_uc = msg_eph->kepler.cuc * power2_31;
+  sbp_bds_eph->c_us = msg_eph->kepler.cus * power2_31;
+  sbp_bds_eph->c_ic = msg_eph->kepler.cic * power2_31;
+  sbp_bds_eph->c_is = msg_eph->kepler.cis * power2_31;
 
-    sbp_bds_eph->dn = msg_eph->kepler.dn * power2_43 * M_PI;
-    sbp_bds_eph->m0 = msg_eph->kepler.m0 * power2_31 * M_PI;
-    sbp_bds_eph->ecc = msg_eph->kepler.ecc * power2_33;
-    sbp_bds_eph->sqrta = msg_eph->kepler.sqrta * power2_19;
-    sbp_bds_eph->omega0 = msg_eph->kepler.omega0 * power2_31 * M_PI;
-    sbp_bds_eph->omegadot = msg_eph->kepler.omegadot * power2_43 * M_PI;
-    sbp_bds_eph->w = msg_eph->kepler.w * power2_31 * M_PI;
-    sbp_bds_eph->inc = msg_eph->kepler.inc * power2_31 * M_PI;
-    sbp_bds_eph->inc_dot = msg_eph->kepler.inc_dot * power2_43 * M_PI;
+  sbp_bds_eph->dn = msg_eph->kepler.dn * power2_43 * M_PI;
+  sbp_bds_eph->m0 = msg_eph->kepler.m0 * power2_31 * M_PI;
+  sbp_bds_eph->ecc = msg_eph->kepler.ecc * power2_33;
+  sbp_bds_eph->sqrta = msg_eph->kepler.sqrta * power2_19;
+  sbp_bds_eph->omega0 = msg_eph->kepler.omega0 * power2_31 * M_PI;
+  sbp_bds_eph->omegadot = msg_eph->kepler.omegadot * power2_43 * M_PI;
+  sbp_bds_eph->w = msg_eph->kepler.w * power2_31 * M_PI;
+  sbp_bds_eph->inc = msg_eph->kepler.inc * power2_31 * M_PI;
+  sbp_bds_eph->inc_dot = msg_eph->kepler.inc_dot * power2_43 * M_PI;
 
-    sbp_bds_eph->af0 = msg_eph->kepler.af0 * power2_33;
-    sbp_bds_eph->af1 = msg_eph->kepler.af1 * power2_50;
-    sbp_bds_eph->af2 = msg_eph->kepler.af2 * power2_66;
+  sbp_bds_eph->af0 = msg_eph->kepler.af0 * power2_33;
+  sbp_bds_eph->af1 = msg_eph->kepler.af1 * power2_50;
+  sbp_bds_eph->af2 = msg_eph->kepler.af2 * power2_66;
 
-    sbp_bds_eph->iode = msg_eph->kepler.iode;
-    sbp_bds_eph->iodc = msg_eph->kepler.iodc;
+  sbp_bds_eph->iode = msg_eph->kepler.iode;
+  sbp_bds_eph->iodc = msg_eph->kepler.iodc;
 
-    sbp_bds_eph->toc.wn = rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
-    sbp_bds_eph->toc.tow = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION;
+  sbp_bds_eph->toc.wn =
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+  tow_ms = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION * SECS_MS;
+  beidou_tow_to_gps_tow(&tow_ms);
+  compute_gps_message_time(
+      tow_ms, &sbp_bds_eph->toc, &state->time_from_rover_obs);
 }
