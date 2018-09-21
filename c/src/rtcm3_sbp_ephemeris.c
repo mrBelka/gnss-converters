@@ -396,7 +396,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->common.sid.code = CODE_BDS2_B1;
   sbp_bds_eph->common.ura = convert_bds_ura_to_meters(msg_eph->ura);
   // Fit interval is hardcoded to 4 hours, as not present in RTCM fields
-  sbp_bds_eph->common.fit_interval = 4 * SEC_IN_HOUR;
+  sbp_bds_eph->common.fit_interval = 3 * SEC_IN_HOUR;
   sbp_bds_eph->common.valid = 1;
   sbp_bds_eph->common.health_bits = msg_eph->health_bits;
 
