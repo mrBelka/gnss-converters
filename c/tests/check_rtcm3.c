@@ -334,7 +334,7 @@ C03 2018 08 14 04 00 00 3.656124463305e-04 8.757172764717e-11 0.000000000000e+00
     ck_assert(msg->common.toe.wn == 2014);
     ck_assert(msg->common.toe.tow == 187214);
     ck_assert(fabs(msg->common.ura - 2.0) < FLOAT_EPS);
-    ck_assert(msg->common.fit_interval == 14400);
+    ck_assert(msg->common.fit_interval == 10800 );
     ck_assert(msg->common.valid == 1);
     ck_assert(msg->common.health_bits == 0);
 
