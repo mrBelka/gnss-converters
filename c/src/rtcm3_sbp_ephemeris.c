@@ -152,7 +152,7 @@ risk) */
     case 4:
       return 8.0;
     case 5:
-      return 5.3;
+      return 11.3;
     case 6:
       return 16.0;
     case 7:
@@ -345,7 +345,7 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_gal_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gal_eph->common.sid.code = CODE_GAL_E1B;
   sbp_gal_eph->common.ura = convert_sisa_to_meters(msg_eph->ura);
-  // Fit interval is hardcoded to 4 hours, as not present in RTCM fields
+  /* Fit interval is hardcoded to 4 hours, as not present in RTCM fields */
   sbp_gal_eph->common.fit_interval = 4 * SEC_IN_HOUR;
   sbp_gal_eph->common.valid = 1;
   sbp_gal_eph->common.health_bits = msg_eph->health_bits;
@@ -395,7 +395,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->common.sid.sat = msg_eph->sat_id;
   sbp_bds_eph->common.sid.code = CODE_BDS2_B1;
   sbp_bds_eph->common.ura = convert_bds_ura_to_meters(msg_eph->ura);
-  // Fit interval is hardcoded to 3 hours, as not present in RTCM fields
+  /* Fit interval is hardcoded to 3 hours, as not present in RTCM fields */
   sbp_bds_eph->common.fit_interval = 3 * SEC_IN_HOUR;
   sbp_bds_eph->common.valid = 1;
   sbp_bds_eph->common.health_bits = msg_eph->health_bits;
