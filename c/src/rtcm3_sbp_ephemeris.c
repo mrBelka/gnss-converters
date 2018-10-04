@@ -12,25 +12,7 @@
 
 #include <math.h>
 #include "rtcm3_sbp_internal.h"
-
-#define power2_66 1.355252715606880e-20 /* 2^-66 */
-#define power2_59 1.734723475976807e-18 /* 2^-59 */
-#define power2_55 2.775557561562891e-17 /* 2^-55 */
-#define power2_50 8.881784197001252e-16 /* 2^-50 */
-#define power2_46 1.421085471520200e-14 /* 2^-46 */
-#define power2_43 1.136868377216160e-13 /* 2^-43 */
-#define power2_40 9.094947017729282e-13 /* 2^-40 */
-#define power2_34 5.820766091346741e-11 /* 2^-34 */
-#define power2_33 1.164153218269348e-10 /* 2^-33 */
-#define power2_32 2.328306436538696e-10 /* 2^-32 */
-#define power2_31 4.656612873077393e-10 /* 2^-31 */
-#define power2_30 9.313225746154785e-10 /* 2^-30 */
-#define power2_29 1.862645149230957e-09 /* 2^-29 */
-#define power2_20 9.536743164062500e-07 /* 2^-20 */
-#define power2_19 1.907348632812500e-06 /* 2^-19 */
-#define power2_11 4.882812500000000e-04 /* 2^-11 */
-#define power2_6 1.5625e-2              /* 2^-6) */
-#define power2_5 3.125000000000000e-02  /* 2^-5) */
+#include <swiftnav/constants.h>
 
 #define FIRST_SISA_STEP 50
 #define SECOND_SISA_STEP 75
@@ -269,28 +251,28 @@ void rtcm3_gps_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_gps_eph->common.valid = msg_eph->kepler.iodc == msg_eph->kepler.iode;
   sbp_gps_eph->common.health_bits = msg_eph->health_bits;
 
-  sbp_gps_eph->tgd = msg_eph->kepler.tgd_gps_s * power2_31;
+  sbp_gps_eph->tgd = msg_eph->kepler.tgd_gps_s * C_1_2P31;
 
-  sbp_gps_eph->c_rs = msg_eph->kepler.crs * power2_5;
-  sbp_gps_eph->c_rc = msg_eph->kepler.crc * power2_5;
-  sbp_gps_eph->c_uc = msg_eph->kepler.cuc * power2_29;
-  sbp_gps_eph->c_us = msg_eph->kepler.cus * power2_29;
-  sbp_gps_eph->c_ic = msg_eph->kepler.cic * power2_29;
-  sbp_gps_eph->c_is = msg_eph->kepler.cis * power2_29;
+  sbp_gps_eph->c_rs = msg_eph->kepler.crs * C_1_2P5;
+  sbp_gps_eph->c_rc = msg_eph->kepler.crc * C_1_2P5;
+  sbp_gps_eph->c_uc = msg_eph->kepler.cuc * C_1_2P29;
+  sbp_gps_eph->c_us = msg_eph->kepler.cus * C_1_2P29;
+  sbp_gps_eph->c_ic = msg_eph->kepler.cic * C_1_2P29;
+  sbp_gps_eph->c_is = msg_eph->kepler.cis * C_1_2P29;
 
-  sbp_gps_eph->dn = msg_eph->kepler.dn * power2_43 * M_PI;
-  sbp_gps_eph->m0 = msg_eph->kepler.m0 * power2_31 * M_PI;
-  sbp_gps_eph->ecc = msg_eph->kepler.ecc * power2_33;
-  sbp_gps_eph->sqrta = msg_eph->kepler.sqrta * power2_19;
-  sbp_gps_eph->omega0 = msg_eph->kepler.omega0 * power2_31 * M_PI;
-  sbp_gps_eph->omegadot = msg_eph->kepler.omegadot * power2_43 * M_PI;
-  sbp_gps_eph->w = msg_eph->kepler.w * power2_31 * M_PI;
-  sbp_gps_eph->inc = msg_eph->kepler.inc * power2_31 * M_PI;
-  sbp_gps_eph->inc_dot = msg_eph->kepler.inc_dot * power2_43 * M_PI;
+  sbp_gps_eph->dn = msg_eph->kepler.dn * C_1_2P43 * M_PI;
+  sbp_gps_eph->m0 = msg_eph->kepler.m0 * C_1_2P31 * M_PI;
+  sbp_gps_eph->ecc = msg_eph->kepler.ecc * C_1_2P33;
+  sbp_gps_eph->sqrta = msg_eph->kepler.sqrta * C_1_2P19;
+  sbp_gps_eph->omega0 = msg_eph->kepler.omega0 * C_1_2P31 * M_PI;
+  sbp_gps_eph->omegadot = msg_eph->kepler.omegadot * C_1_2P43 * M_PI;
+  sbp_gps_eph->w = msg_eph->kepler.w * C_1_2P31 * M_PI;
+  sbp_gps_eph->inc = msg_eph->kepler.inc * C_1_2P31 * M_PI;
+  sbp_gps_eph->inc_dot = msg_eph->kepler.inc_dot * C_1_2P43 * M_PI;
 
-  sbp_gps_eph->af0 = msg_eph->kepler.af0 * power2_31;
-  sbp_gps_eph->af1 = msg_eph->kepler.af1 * power2_43;
-  sbp_gps_eph->af2 = msg_eph->kepler.af2 * power2_55;
+  sbp_gps_eph->af0 = msg_eph->kepler.af0 * C_1_2P31;
+  sbp_gps_eph->af1 = msg_eph->kepler.af1 * C_1_2P43;
+  sbp_gps_eph->af2 = msg_eph->kepler.af2 * C_1_2P55;
 
   sbp_gps_eph->iode = msg_eph->kepler.iode;
   sbp_gps_eph->iodc = msg_eph->kepler.iodc;
@@ -314,21 +296,21 @@ void rtcm3_glo_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_glo_eph->common.valid = 1;
   sbp_glo_eph->common.health_bits = msg_eph->health_bits;
 
-  sbp_glo_eph->gamma = msg_eph->glo.gamma * power2_40;
-  sbp_glo_eph->tau = msg_eph->glo.tau * power2_30;
-  sbp_glo_eph->d_tau = msg_eph->glo.d_tau * power2_30;
+  sbp_glo_eph->gamma = msg_eph->glo.gamma * C_1_2P40;
+  sbp_glo_eph->tau = msg_eph->glo.tau * C_1_2P30;
+  sbp_glo_eph->d_tau = msg_eph->glo.d_tau * C_1_2P30;
 
-  sbp_glo_eph->pos[0] = msg_eph->glo.pos[0] * power2_11 * 1000;
-  sbp_glo_eph->pos[1] = msg_eph->glo.pos[1] * power2_11 * 1000;
-  sbp_glo_eph->pos[2] = msg_eph->glo.pos[2] * power2_11 * 1000;
+  sbp_glo_eph->pos[0] = msg_eph->glo.pos[0] * C_1_2P11 * 1000;
+  sbp_glo_eph->pos[1] = msg_eph->glo.pos[1] * C_1_2P11 * 1000;
+  sbp_glo_eph->pos[2] = msg_eph->glo.pos[2] * C_1_2P11 * 1000;
 
-  sbp_glo_eph->vel[0] = msg_eph->glo.vel[0] * power2_20 * 1000;
-  sbp_glo_eph->vel[1] = msg_eph->glo.vel[1] * power2_20 * 1000;
-  sbp_glo_eph->vel[2] = msg_eph->glo.vel[2] * power2_20 * 1000;
+  sbp_glo_eph->vel[0] = msg_eph->glo.vel[0] * C_1_2P20 * 1000;
+  sbp_glo_eph->vel[1] = msg_eph->glo.vel[1] * C_1_2P20 * 1000;
+  sbp_glo_eph->vel[2] = msg_eph->glo.vel[2] * C_1_2P20 * 1000;
 
-  sbp_glo_eph->acc[0] = msg_eph->glo.acc[0] * power2_30 * 1000;
-  sbp_glo_eph->acc[1] = msg_eph->glo.acc[1] * power2_30 * 1000;
-  sbp_glo_eph->acc[2] = msg_eph->glo.acc[2] * power2_30 * 1000;
+  sbp_glo_eph->acc[0] = msg_eph->glo.acc[0] * C_1_2P30 * 1000;
+  sbp_glo_eph->acc[1] = msg_eph->glo.acc[1] * C_1_2P30 * 1000;
+  sbp_glo_eph->acc[2] = msg_eph->glo.acc[2] * C_1_2P30 * 1000;
 
   sbp_glo_eph->fcn = msg_eph->glo.fcn + 1;
   sbp_glo_eph->iod = (msg_eph->glo.t_b * 15 * 60) & 127;
@@ -350,29 +332,29 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_gal_eph->common.valid = 1;
   sbp_gal_eph->common.health_bits = msg_eph->health_bits;
 
-  sbp_gal_eph->bgd_e1e5a = msg_eph->kepler.tgd_gal_s[0] * power2_32;
-  sbp_gal_eph->bgd_e1e5b = msg_eph->kepler.tgd_gal_s[1] * power2_32;
+  sbp_gal_eph->bgd_e1e5a = msg_eph->kepler.tgd_gal_s[0] * C_1_2P32;
+  sbp_gal_eph->bgd_e1e5b = msg_eph->kepler.tgd_gal_s[1] * C_1_2P32;
 
-  sbp_gal_eph->c_rs = msg_eph->kepler.crs * power2_5;
-  sbp_gal_eph->c_rc = msg_eph->kepler.crc * power2_5;
-  sbp_gal_eph->c_uc = msg_eph->kepler.cuc * power2_29;
-  sbp_gal_eph->c_us = msg_eph->kepler.cus * power2_29;
-  sbp_gal_eph->c_ic = msg_eph->kepler.cic * power2_29;
-  sbp_gal_eph->c_is = msg_eph->kepler.cis * power2_29;
+  sbp_gal_eph->c_rs = msg_eph->kepler.crs * C_1_2P5;
+  sbp_gal_eph->c_rc = msg_eph->kepler.crc * C_1_2P5;
+  sbp_gal_eph->c_uc = msg_eph->kepler.cuc * C_1_2P29;
+  sbp_gal_eph->c_us = msg_eph->kepler.cus * C_1_2P29;
+  sbp_gal_eph->c_ic = msg_eph->kepler.cic * C_1_2P29;
+  sbp_gal_eph->c_is = msg_eph->kepler.cis * C_1_2P29;
 
-  sbp_gal_eph->dn = msg_eph->kepler.dn * power2_43 * M_PI;
-  sbp_gal_eph->m0 = msg_eph->kepler.m0 * power2_31 * M_PI;
-  sbp_gal_eph->ecc = msg_eph->kepler.ecc * power2_33;
-  sbp_gal_eph->sqrta = msg_eph->kepler.sqrta * power2_19;
-  sbp_gal_eph->omega0 = msg_eph->kepler.omega0 * power2_31 * M_PI;
-  sbp_gal_eph->omegadot = msg_eph->kepler.omegadot * power2_43 * M_PI;
-  sbp_gal_eph->w = msg_eph->kepler.w * power2_31 * M_PI;
-  sbp_gal_eph->inc = msg_eph->kepler.inc * power2_31 * M_PI;
-  sbp_gal_eph->inc_dot = msg_eph->kepler.inc_dot * power2_43 * M_PI;
+  sbp_gal_eph->dn = msg_eph->kepler.dn * C_1_2P43 * M_PI;
+  sbp_gal_eph->m0 = msg_eph->kepler.m0 * C_1_2P31 * M_PI;
+  sbp_gal_eph->ecc = msg_eph->kepler.ecc * C_1_2P33;
+  sbp_gal_eph->sqrta = msg_eph->kepler.sqrta * C_1_2P19;
+  sbp_gal_eph->omega0 = msg_eph->kepler.omega0 * C_1_2P31 * M_PI;
+  sbp_gal_eph->omegadot = msg_eph->kepler.omegadot * C_1_2P43 * M_PI;
+  sbp_gal_eph->w = msg_eph->kepler.w * C_1_2P31 * M_PI;
+  sbp_gal_eph->inc = msg_eph->kepler.inc * C_1_2P31 * M_PI;
+  sbp_gal_eph->inc_dot = msg_eph->kepler.inc_dot * C_1_2P43 * M_PI;
 
-  sbp_gal_eph->af0 = msg_eph->kepler.af0 * power2_34;
-  sbp_gal_eph->af1 = msg_eph->kepler.af1 * power2_46;
-  sbp_gal_eph->af2 = msg_eph->kepler.af2 * power2_59;
+  sbp_gal_eph->af0 = msg_eph->kepler.af0 * C_1_2P34;
+  sbp_gal_eph->af1 = msg_eph->kepler.af1 * C_1_2P46;
+  sbp_gal_eph->af2 = msg_eph->kepler.af2 * C_1_2P59;
 
   sbp_gal_eph->iode = msg_eph->kepler.iode;
   sbp_gal_eph->iodc = msg_eph->kepler.iode;
@@ -403,26 +385,26 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->tgd1 = msg_eph->kepler.tgd_bds_s[0] * 1e-10;
   sbp_bds_eph->tgd2 = msg_eph->kepler.tgd_bds_s[1] * 1e-10;
 
-  sbp_bds_eph->c_rs = msg_eph->kepler.crs * power2_6;
-  sbp_bds_eph->c_rc = msg_eph->kepler.crc * power2_6;
-  sbp_bds_eph->c_uc = msg_eph->kepler.cuc * power2_31;
-  sbp_bds_eph->c_us = msg_eph->kepler.cus * power2_31;
-  sbp_bds_eph->c_ic = msg_eph->kepler.cic * power2_31;
-  sbp_bds_eph->c_is = msg_eph->kepler.cis * power2_31;
+  sbp_bds_eph->c_rs = msg_eph->kepler.crs * C_1_2P6;
+  sbp_bds_eph->c_rc = msg_eph->kepler.crc * C_1_2P6;
+  sbp_bds_eph->c_uc = msg_eph->kepler.cuc * C_1_2P31;
+  sbp_bds_eph->c_us = msg_eph->kepler.cus * C_1_2P31;
+  sbp_bds_eph->c_ic = msg_eph->kepler.cic * C_1_2P31;
+  sbp_bds_eph->c_is = msg_eph->kepler.cis * C_1_2P31;
 
-  sbp_bds_eph->dn = msg_eph->kepler.dn * power2_43 * M_PI;
-  sbp_bds_eph->m0 = msg_eph->kepler.m0 * power2_31 * M_PI;
-  sbp_bds_eph->ecc = msg_eph->kepler.ecc * power2_33;
-  sbp_bds_eph->sqrta = msg_eph->kepler.sqrta * power2_19;
-  sbp_bds_eph->omega0 = msg_eph->kepler.omega0 * power2_31 * M_PI;
-  sbp_bds_eph->omegadot = msg_eph->kepler.omegadot * power2_43 * M_PI;
-  sbp_bds_eph->w = msg_eph->kepler.w * power2_31 * M_PI;
-  sbp_bds_eph->inc = msg_eph->kepler.inc * power2_31 * M_PI;
-  sbp_bds_eph->inc_dot = msg_eph->kepler.inc_dot * power2_43 * M_PI;
+  sbp_bds_eph->dn = msg_eph->kepler.dn * C_1_2P43 * M_PI;
+  sbp_bds_eph->m0 = msg_eph->kepler.m0 * C_1_2P31 * M_PI;
+  sbp_bds_eph->ecc = msg_eph->kepler.ecc * C_1_2P33;
+  sbp_bds_eph->sqrta = msg_eph->kepler.sqrta * C_1_2P19;
+  sbp_bds_eph->omega0 = msg_eph->kepler.omega0 * C_1_2P31 * M_PI;
+  sbp_bds_eph->omegadot = msg_eph->kepler.omegadot * C_1_2P43 * M_PI;
+  sbp_bds_eph->w = msg_eph->kepler.w * C_1_2P31 * M_PI;
+  sbp_bds_eph->inc = msg_eph->kepler.inc * C_1_2P31 * M_PI;
+  sbp_bds_eph->inc_dot = msg_eph->kepler.inc_dot * C_1_2P43 * M_PI;
 
-  sbp_bds_eph->af0 = msg_eph->kepler.af0 * power2_33;
-  sbp_bds_eph->af1 = msg_eph->kepler.af1 * power2_50;
-  sbp_bds_eph->af2 = msg_eph->kepler.af2 * power2_66;
+  sbp_bds_eph->af0 = msg_eph->kepler.af0 * C_1_2P33;
+  sbp_bds_eph->af1 = msg_eph->kepler.af1 * C_1_2P50;
+  sbp_bds_eph->af2 = msg_eph->kepler.af2 * C_1_2P66;
 
   sbp_bds_eph->iode = msg_eph->kepler.iode;
   sbp_bds_eph->iodc = msg_eph->kepler.iodc;
