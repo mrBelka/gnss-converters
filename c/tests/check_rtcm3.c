@@ -324,11 +324,20 @@ C03 2018 08 14 04 00 00 3.656124463305e-04 8.757172764717e-11 0.000000000000e+00
      2.500104139373e-10 0.000000000000e+00 0.000000000000e+00 0.000000000000e+00
      2.000000000000e+00 0.000000000000e+00 3.700000000000e-09-1.000000000000e-08
      0.000000000000e+00 0.000000000000e+00
+
+C06 2018 08 14 04 00 00 2.242858754471e-04 2.508659946443e-11 1.924458856162e-18
+     6.000000000000e+00-4.404687500000e+01 6.643133856047e-10 1.319269256677e+00
+    -5.727633833885e-07 7.140220026486e-03 3.428151831031e-05 6.492804334641e+03
+     1.872000000000e+05 1.392327249050e-07-2.286649500564e+00 2.207234501839e-07
+     9.452314900799e-01-8.311562500000e+02-2.220683918913e+00-1.816147078387e-09
+     7.307447241652e-10 0.000000000000e+00 0.000000000000e+00 0.000000000000e+00
+     2.000000000000e+00 0.000000000000e+00 8.100000000000e-09-1.800000000000e-09
+     0.000000000000e+00 5.000000000000e+00
      */
     // clang-format on
     checked_eph = true;
     msg_ephemeris_bds_t *msg = (msg_ephemeris_bds_t *)buffer;
-    ck_assert(msg->common.sid.sat == 3);
+    ck_assert(msg->common.sid.sat == 6);
     ck_assert(msg->common.sid.code == CODE_BDS2_B1);
 
     ck_assert(msg->common.toe.wn == 2014);
@@ -338,33 +347,33 @@ C03 2018 08 14 04 00 00 3.656124463305e-04 8.757172764717e-11 0.000000000000e+00
     ck_assert(msg->common.valid == 1);
     ck_assert(msg->common.health_bits == 0);
 
-    ck_assert(fabs(msg->tgd1 - 3.700000000000e-9) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->tgd2 - -1.000000000000e-8) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->c_rs - 7.477343750000e2) < FLOAT_EPS);
-    ck_assert(fabs(msg->c_rc - -6.223750000000e2) < FLOAT_EPS);
-    ck_assert(fabs(msg->c_uc - 2.450076863170e-5) < FLOAT_EPS);
-    ck_assert(fabs(msg->c_us - 2.010725438595e-5) < FLOAT_EPS);
-    ck_assert(fabs(msg->c_ic - 3.492459654808e-8) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->c_is - 4.610046744347e-8) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->tgd1 - 8.100000000000e-9) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->tgd2 - -1.800000000000e-9) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->c_rs - -4.40468750000e1) < FLOAT_EPS);
+    ck_assert(fabs(msg->c_rc - -8.31156250000000e2) < FLOAT_EPS);
+    ck_assert(fabs(msg->c_uc - -5.7276338338850e-7) < FLOAT_EPS);
+    ck_assert(fabs(msg->c_us - 3.428151831031e-5) < FLOAT_EPS);
+    ck_assert(fabs(msg->c_ic - 1.392327249050e-7) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->c_is - 2.207234501839e-7) * 1e9 < FLOAT_EPS);
 
-    ck_assert(fabs(msg->dn - 4.053025967657e-9) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->m0 - 2.481798765406) < FLOAT_EPS);
-    ck_assert(fabs(msg->ecc - 4.999429220334e-4) < FLOAT_EPS);
-    ck_assert(fabs(msg->sqrta - 6.493438133240e3) < FLOAT_EPS);
-    ck_assert(fabs(msg->omega0 - -2.060782262253) < FLOAT_EPS);
-    ck_assert(fabs(msg->omegadot - -3.301566094909e-9) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->w - 2.593288787973) < FLOAT_EPS);
-    ck_assert(fabs(msg->inc - 6.319308856579e-2) < FLOAT_EPS);
-    ck_assert(fabs(msg->inc_dot - 2.500104139373e-10) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->dn - 6.643133856047e-10) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->m0 - 1.319269256677) < FLOAT_EPS);
+    ck_assert(fabs(msg->ecc - 7.140220026486e-3) < FLOAT_EPS);
+    ck_assert(fabs(msg->sqrta - 6.492804334641e3) < FLOAT_EPS);
+    ck_assert(fabs(msg->omega0 - -2.286649500564) < FLOAT_EPS);
+    ck_assert(fabs(msg->omegadot - -1.816147078387e-9) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->w - -2.220683918913) < FLOAT_EPS);
+    ck_assert(fabs(msg->inc - 9.452314900799e-1) < FLOAT_EPS);
+    ck_assert(fabs(msg->inc_dot - 7.307447241652e-10) * 1e9 < FLOAT_EPS);
 
-    ck_assert(fabs(msg->af0 - 3.656124463305e-4) < FLOAT_EPS);
-    ck_assert(fabs(msg->af1 - 8.757172764717e-11) * 1e9 < FLOAT_EPS);
-    ck_assert(fabs(msg->af2 - 0.0) < FLOAT_EPS);
+    ck_assert(fabs(msg->af0 - 2.242858754471e-4) < FLOAT_EPS);
+    ck_assert(fabs(msg->af1 - 2.508659946443e-11) * 1e9 < FLOAT_EPS);
+    ck_assert(fabs(msg->af2 - 1.924458856162e-18) * 1e9  < FLOAT_EPS);
 
     ck_assert(msg->toc.wn == 2014);
     ck_assert(msg->toc.tow == 187214);
-    ck_assert(msg->iode == 1);
-    ck_assert(msg->iodc == 0);
+    ck_assert(msg->iode == 6);
+    ck_assert(msg->iodc == 5);
   }
   return;
 }
