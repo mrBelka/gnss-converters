@@ -193,15 +193,17 @@ static void get_utc_time_string(bool time,
 
   if (time) {
     /* Time (UTC) */
+    uint16_t ns_rounded = (u16)roundf(NMEA_UTC_S_FRAC_DIVISOR * sbp_utc_time->ns * 1e-9)/NMEA_UTC_S_FRAC_DIVISOR;
+    uint16_t ns_frac = (u16)(roundf(NMEA_UTC_S_FRAC_DIVISOR * sbp_utc_time->ns * 1e-9) - NMEA_UTC_S_FRAC_DIVISOR);
     vsnprintf_wrap(
         &utc_str,
         buf_end,
         "%02u%02u%02u.%0*u,",
         sbp_utc_time->hours,
         sbp_utc_time->minutes,
-        sbp_utc_time->seconds,
+        sbp_utc_time->seconds + ns_rounded,
         NMEA_UTC_S_DECIMALS,
-        (u16)roundf(NMEA_UTC_S_FRAC_DIVISOR * sbp_utc_time->ns * 1e-9));
+        ns_frac);
   }
 
   if (date) {
