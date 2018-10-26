@@ -35,8 +35,8 @@ struct sbp_nmea_state {
   msg_baseline_heading_t sbp_heading;
 
   uint8_t num_obs;
-  uint8_t count;
-  uint8_t total;
+  uint8_t obs_seq_count;
+  uint8_t obs_seq_total;
   sbp_gnss_signal_t nav_sids[MAX_SATS];
   sbp_gps_time_t obs_time;
 
