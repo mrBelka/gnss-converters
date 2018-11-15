@@ -226,13 +226,22 @@ u32 rtcm3_decode_fit_interval_glo(const u8 p1) {
  *
  * \sa rtcm3_gps_adjust_week_cycle256
  */
-u16 rtcm3_gps_adjust_week_cycle(u16 wn_raw, u16 wn_ref) {
+u16 rtcm3_gps_adjust_week_cycle(gps_time_t ref_time, gps_time_t eph_time) {
   /* note the week numbers are unsigned so they cannot be WN_UNKNOWN */
-  if (wn_raw >= wn_ref) {
-    return wn_raw;
+  u16 current_wn = 0;
+  if (ref_time.wn >= eph_time.wn) {
+    current_wn = ref_time.wn;
   }
 
-  return wn_raw + 1024 * ((wn_ref + 1023 - wn_raw) / 1024);
+  current_wn = ref_time.wn + 1024 * ((eph_time.wn + 1023 - ref_time.wn) / 1024);
+
+  s32 timediff = gpsdifftime(&ref_time, &eph_time);
+  if (timediff < -SEC_IN_WEEK / 2) {
+    current_wn -= 1;
+  } else if (timediff > SEC_IN_WEEK / 2) {
+    current_wn += 1;
+  }
+  return current_wn;
 }
 
 void rtcm3_gps_eph_to_sbp(rtcm_msg_eph *msg_eph,
@@ -241,7 +250,7 @@ void rtcm3_gps_eph_to_sbp(rtcm_msg_eph *msg_eph,
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
   sbp_gps_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   sbp_gps_eph->common.toe.tow = msg_eph->toe * 16;
   sbp_gps_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gps_eph->common.sid.code = CODE_GPS_L1CA;
@@ -325,7 +334,7 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
   sbp_gal_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   sbp_gal_eph->common.toe.tow = msg_eph->toe * GALILEO_TOC_RESOLUTION;
   sbp_gal_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gal_eph->common.sid.code = CODE_GAL_E1B;
@@ -372,7 +381,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
   sbp_bds_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   u32 tow_ms = msg_eph->toe * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toe;
@@ -416,7 +425,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->iodc = msg_eph->kepler.iodc;
 
   sbp_bds_eph->toc.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs.wn, msg_eph->wn);
+      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   tow_ms = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toc;
