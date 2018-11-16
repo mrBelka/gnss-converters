@@ -213,45 +213,15 @@ u32 rtcm3_decode_fit_interval_glo(const u8 p1) {
   }
 }
 
-/** Adjust the week number of wn_raw to correctly reflect the current week
- * cycle.
- *
- * Assumes the current week number cannot be earlier than the reference WN. So
- * will return the correct WN for at most 20 years after the reference WN.
- *
- * \param wn_raw Raw week number from NAV data stream that is modulo 1024
- * \param wn_ref Reference week number that is from some point in the past
- *
- * \return The absolute week number counted from 1980
- *
- * \sa rtcm3_gps_adjust_week_cycle256
- */
-u16 rtcm3_gps_adjust_week_cycle(gps_time_t ref_time, gps_time_t eph_time) {
-  /* note the week numbers are unsigned so they cannot be WN_UNKNOWN */
-  u16 current_wn = 0;
-  if (ref_time.wn >= eph_time.wn) {
-    current_wn = ref_time.wn;
-  }
-
-  current_wn = ref_time.wn + 1024 * ((eph_time.wn + 1023 - ref_time.wn) / 1024);
-
-  s32 timediff = gpsdifftime(&ref_time, &eph_time);
-  if (timediff < -SEC_IN_WEEK / 2) {
-    current_wn -= 1;
-  } else if (timediff > SEC_IN_WEEK / 2) {
-    current_wn += 1;
-  }
-  return current_wn;
-}
-
 void rtcm3_gps_eph_to_sbp(rtcm_msg_eph *msg_eph,
                           msg_ephemeris_gps_t *sbp_gps_eph,
                           struct rtcm3_sbp_state *state) {
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
-  sbp_gps_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   sbp_gps_eph->common.toe.tow = msg_eph->toe * 16;
+  sbp_gps_eph->common.toe.wn =
+      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
+  gps_time_match_weeks(&(gps_time_t){sbp_gps_eph->common.toe.tow,sbp_gps_eph->common.toe.wn},&state->time_from_rover_obs);
   sbp_gps_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gps_eph->common.sid.code = CODE_GPS_L1CA;
   sbp_gps_eph->common.ura = convert_ura_to_uri(msg_eph->ura);
@@ -333,9 +303,10 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
                           struct rtcm3_sbp_state *state) {
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
-  sbp_gal_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
   sbp_gal_eph->common.toe.tow = msg_eph->toe * GALILEO_TOC_RESOLUTION;
+  sbp_gal_eph->common.toe.wn =
+      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
+  gps_time_match_weeks(&(gps_time_t){sbp_gal_eph->common.toe.tow,sbp_gal_eph->common.toe.wn},&state->time_from_rover_obs);
   sbp_gal_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gal_eph->common.sid.code = CODE_GAL_E1B;
   sbp_gal_eph->common.ura = convert_sisa_to_meters(msg_eph->ura);
@@ -380,8 +351,9 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
                           struct rtcm3_sbp_state *state) {
   /* RTCM gives wn module 1024, so take the current time and mask the lower 10
    * bits */
+
   sbp_bds_eph->common.toe.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
+      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
   u32 tow_ms = msg_eph->toe * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toe;
@@ -425,7 +397,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->iodc = msg_eph->kepler.iodc;
 
   sbp_bds_eph->toc.wn =
-      rtcm3_gps_adjust_week_cycle(state->time_from_rover_obs, (gps_time_t){msg_eph->wn,msg_eph->toe});
+      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
   tow_ms = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toc;
