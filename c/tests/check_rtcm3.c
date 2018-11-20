@@ -425,16 +425,16 @@ C06 2018 08 14 04 00 00 2.242858754471e-04 2.508659946443e-11 1.924458856162e-18
 }
 
 void sbp_callback_eph_wn_rollover(
-  u16 msg_id, u8 length, u8 *buffer, u16 sender_id, void *context) {
-(void)length;
-(void)sender_id;
-(void)context;
-/* ignore log messages */
-if (msg_id == SBP_MSG_EPHEMERIS_GPS) {
-  msg_ephemeris_gps_t *msg = (msg_ephemeris_gps_t *)buffer;
-  ck_assert(msg->common.toe.wn == 2026);
-  ck_assert(msg->common.toe.tow == 0);
-}
+    u16 msg_id, u8 length, u8 *buffer, u16 sender_id, void *context) {
+  (void)length;
+  (void)sender_id;
+  (void)context;
+  /* ignore log messages */
+  if (msg_id == SBP_MSG_EPHEMERIS_GPS) {
+    msg_ephemeris_gps_t *msg = (msg_ephemeris_gps_t *)buffer;
+    ck_assert(msg->common.toe.wn == 2026);
+    ck_assert(msg->common.toe.tow == 0);
+  }
   return;
 }
 

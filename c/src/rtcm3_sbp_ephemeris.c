@@ -220,8 +220,10 @@ void rtcm3_gps_eph_to_sbp(rtcm_msg_eph *msg_eph,
    * bits */
   sbp_gps_eph->common.toe.tow = msg_eph->toe * 16;
   sbp_gps_eph->common.toe.wn =
-      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
-  gps_time_match_weeks(&(gps_time_t){sbp_gps_eph->common.toe.tow,sbp_gps_eph->common.toe.wn},&state->time_from_rover_obs);
+      gps_adjust_week_cycle(msg_eph->wn, GPS_WEEK_REFERENCE);
+  gps_time_match_weeks(
+      &(gps_time_t){sbp_gps_eph->common.toe.tow, sbp_gps_eph->common.toe.wn},
+      &state->time_from_rover_obs);
   sbp_gps_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gps_eph->common.sid.code = CODE_GPS_L1CA;
   sbp_gps_eph->common.ura = convert_ura_to_uri(msg_eph->ura);
@@ -305,8 +307,10 @@ void rtcm3_gal_eph_to_sbp(rtcm_msg_eph *msg_eph,
    * bits */
   sbp_gal_eph->common.toe.tow = msg_eph->toe * GALILEO_TOC_RESOLUTION;
   sbp_gal_eph->common.toe.wn =
-      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
-  gps_time_match_weeks(&(gps_time_t){sbp_gal_eph->common.toe.tow,sbp_gal_eph->common.toe.wn},&state->time_from_rover_obs);
+      gps_adjust_week_cycle(msg_eph->wn, GPS_WEEK_REFERENCE);
+  gps_time_match_weeks(
+      &(gps_time_t){sbp_gal_eph->common.toe.tow, sbp_gal_eph->common.toe.wn},
+      &state->time_from_rover_obs);
   sbp_gal_eph->common.sid.sat = msg_eph->sat_id;
   sbp_gal_eph->common.sid.code = CODE_GAL_E1B;
   sbp_gal_eph->common.ura = convert_sisa_to_meters(msg_eph->ura);
@@ -353,7 +357,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
    * bits */
 
   sbp_bds_eph->common.toe.wn =
-      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
+      gps_adjust_week_cycle(msg_eph->wn, GPS_WEEK_REFERENCE);
   u32 tow_ms = msg_eph->toe * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toe;
@@ -396,8 +400,7 @@ void rtcm3_bds_eph_to_sbp(rtcm_msg_eph *msg_eph,
   sbp_bds_eph->iode = msg_eph->kepler.iode;
   sbp_bds_eph->iodc = msg_eph->kepler.iodc;
 
-  sbp_bds_eph->toc.wn =
-      gps_adjust_week_cycle(msg_eph->wn,GPS_WEEK_REFERENCE);
+  sbp_bds_eph->toc.wn = gps_adjust_week_cycle(msg_eph->wn, GPS_WEEK_REFERENCE);
   tow_ms = msg_eph->kepler.toc * BEIDOU_TOC_RESOLUTION * SECS_MS;
   beidou_tow_to_gps_tow(&tow_ms);
   gps_time_t toc;
