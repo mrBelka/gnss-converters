@@ -348,12 +348,12 @@ void send_gpgga(const struct sbp_nmea_state *state) {
   } else {
     NMEA_SENTENCE_PRINTF(",,,,");
   }
-  NMEA_SENTENCE_PRINTF("%01d,", fix_type);
+  NMEA_SENTENCE_PRINTF("%01d,", NMEA_GGA_QI_EST == fix_type ? NMEA_GGA_QI_DGPS : fix_type );   // special change
 
   if (fix_type != NMEA_GGA_QI_INVALID) {
     NMEA_SENTENCE_PRINTF("%02d,%.1f,%.2f,M,0.0,M,",
-                         sbp_pos_llh->n_sats,
-                         round(10 * sbp_dops->hdop * 0.01) / 10,
+                         NMEA_GGA_QI_EST == fix_type ? 8 : sbp_pos_llh->n_sats,                           // special change
+                         NMEA_GGA_QI_EST == fix_type ? 0.1 : round(10 * sbp_dops->hdop * 0.01) / 10,      // special change
                          sbp_pos_llh->height);
   } else {
     NMEA_SENTENCE_PRINTF(",,,M,,M,");
@@ -692,7 +692,7 @@ void send_gprmc(const struct sbp_nmea_state *state) {
   NMEA_SENTENCE_PRINTF(
       ",,"  /* Magnetic Variation */
       "%c", /* Mode Indicator */
-      mode);
+      'E' == mode ? 'D' : mode);  // special change
   NMEA_SENTENCE_DONE(state);
 }
 
@@ -738,7 +738,7 @@ void send_gpvtg(const struct sbp_nmea_state *state) {
   }
 
   /* Mode (note this is position mode not velocity mode)*/
-  NMEA_SENTENCE_PRINTF("%c", mode);
+  NMEA_SENTENCE_PRINTF("%c", 'E' == mode ? 'D' : mode);     // special change
   NMEA_SENTENCE_DONE(state);
 }
 
