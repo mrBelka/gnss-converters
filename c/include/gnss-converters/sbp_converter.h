@@ -21,8 +21,10 @@
 
 struct sbp_converter {
   struct rtcm3_out_state state;
-  sbp_state_t sbp_state;
   fifo_t fifo;
+  sbp_state_t sbp_state;
+  sbp_msg_callbacks_node_t base_pos_ecef_callback_node;
+  sbp_msg_callbacks_node_t obs_callback_node;
   uint8_t buffer[BUFFER_SIZE];
 };
 
@@ -33,7 +35,7 @@ extern "C" {
 
 void sbp_converter_init(struct sbp_converter *converter);
 
-size_t sbp_converter_write(struct sbp_converter *converter, const uint8_t *buffer, size_t length);
+ssize_t sbp_converter_write(struct sbp_converter *converter, uint16_t sender, uint16_t type, uint8_t *buffer, size_t length);
 
 size_t sbp_converter_read(struct sbp_converter *converter, uint8_t *buffer, size_t length);
 
