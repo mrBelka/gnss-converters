@@ -56,6 +56,9 @@ size_t sbp_conv(sbp_conv_t conv, uint16_t sender, uint16_t type,
     sbp2rtcm_sbp_obs_cb(sender, rlen, rbuf, &conv->state);
     break;
   }
+  default: {
+    break;
+  }
   }
   return fifo_read(&conv->fifo, wbuf, wlen);
 }

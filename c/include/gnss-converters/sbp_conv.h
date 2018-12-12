@@ -13,6 +13,7 @@
 #ifndef GNSS_CONVERTERS_SBP_CONV_INTERFACE_H
 #define GNSS_CONVERTERS_SBP_CONV_INTERFACE_H
 
+#include <stdint.h>
 #include <stdlib.h>
 
 typedef struct sbp_conv_s *sbp_conv_t;
