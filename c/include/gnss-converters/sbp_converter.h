@@ -17,27 +17,14 @@
 #include <swiftnav/fifo_byte.h>
 #include <libsbp/sbp.h>
 
-#define BUFFER_SIZE 8192
-
-struct sbp_converter {
-  struct rtcm3_out_state state;
-  fifo_t fifo;
-  sbp_state_t sbp_state;
-  sbp_msg_callbacks_node_t base_pos_ecef_callback_node;
-  sbp_msg_callbacks_node_t obs_callback_node;
-  uint8_t buffer[BUFFER_SIZE];
-};
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void sbp_converter_init(struct sbp_converter *converter);
+void sbp_converter_init(struct rtcm3_out_state *state, fifo_t *fifo, uint8_t *buf, size_t len);
 
-ssize_t sbp_converter_write(struct sbp_converter *converter, uint16_t sender, uint16_t type, uint8_t *buffer, size_t length);
-
-size_t sbp_converter_read(struct sbp_converter *converter, uint8_t *buffer, size_t length);
+size_t sbp_converter_write(struct rtcm3_out_state *state, fifo_t *fifo, uint16_t sender, uint16_t type,
+                           uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen);
 
 #ifdef __cplusplus
 }
