@@ -17,9 +17,22 @@
 #include <swiftnav/fifo_byte.h>
 #include <libsbp/sbp.h>
 
+typedef struct sbp_converter_s {
+  struct rtcm3_out_state state;
+  fifo_t fifo;
+  uint8_t buf[8192];
+} sbp_converter_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+sbp_converter_t *sbp_converter_new();
+
+void sbp_converter_delete(sbp_converter_t *converter);
+
+  size_t sbp_converter_convert(sbp_converter_t *converter, uint16_t sender, uint16_t type,
+                               uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen);
 
 void sbp_converter_init(struct rtcm3_out_state *state, fifo_t *fifo, uint8_t *buf, size_t len);
 
