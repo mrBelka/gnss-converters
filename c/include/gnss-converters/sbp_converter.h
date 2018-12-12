@@ -31,13 +31,8 @@ sbp_converter_t *sbp_converter_new();
 
 void sbp_converter_delete(sbp_converter_t *converter);
 
-  size_t sbp_converter_convert(sbp_converter_t *converter, uint16_t sender, uint16_t type,
-                               uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen);
-
-void sbp_converter_init(struct rtcm3_out_state *state, fifo_t *fifo, uint8_t *buf, size_t len);
-
-size_t sbp_converter_write(struct rtcm3_out_state *state, fifo_t *fifo, uint16_t sender, uint16_t type,
-                           uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen);
+size_t sbp_converter_convert(sbp_converter_t *converter, uint16_t sender, uint16_t type,
+                             uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen);
 
 #ifdef __cplusplus
 }

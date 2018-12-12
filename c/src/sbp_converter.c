@@ -22,29 +22,6 @@ static void sbp_converter_callback(uint8_t *buf, uint16_t len, void *context) {
   fifo_write(fifo, buf, len);
 }
 
-void sbp_converter_init(struct rtcm3_out_state *state, fifo_t *fifo, uint8_t *buf, size_t len) {
-  fifo_init(fifo, buf, len);
-  sbp2rtcm_init(state, sbp_converter_callback, fifo);
-  gps_time_t gps_time = time2gps_t(time(NULL));
-  double gps_utc_offset = get_gps_utc_offset(&gps_time, NULL);
-  sbp2rtcm_set_leap_second(gps_utc_offset, state);
-}
-
-size_t sbp_converter_write(struct rtcm3_out_state *state, fifo_t *fifo, uint16_t sender, uint16_t type,
-                           uint8_t *rbuf, size_t rlen, uint8_t *wbuf, size_t wlen) {
-  switch (type) {
-  case SBP_MSG_BASE_POS_ECEF: {
-    sbp2rtcm_base_pos_ecef_cb(sender, rlen, rbuf, state);
-    break;
-  }
-  case SBP_MSG_OBS: {
-    sbp2rtcm_sbp_obs_cb(sender, rlen, rbuf, state);
-    break;
-  }
-  }
-  return fifo_read(fifo, wbuf, wlen);
-}
-
 sbp_converter_t *sbp_converter_new() {
   sbp_converter_t *converter = malloc(sizeof(sbp_converter_t));
   if (converter != NULL) {
