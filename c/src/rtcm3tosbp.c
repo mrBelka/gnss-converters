@@ -27,7 +27,11 @@
 #include <swiftnav/fifo_byte.h>
 #include <swiftnav/gnss_time.h>
 #include <time.h>
+#include <string.h>
 #include <unistd.h>
+#include <getopt.h>
+
+#include "biases.h"
 
 /* You may reduce FIFO_SIZE if you need a lower memory footprint. */
 #define FIFO_SIZE (1 << 14)
@@ -35,6 +39,9 @@
 #define SBP_PREAMBLE 0x55
 
 static struct rtcm3_sbp_state state;
+static void ParseBiases(char *arg);
+static void ParseGlonassCodeBiases(char *arg);
+static void ParseGlonassPhaseBiases(char *arg);
 
 static void update_obs_time(const msg_obs_t *msg) {
   gps_time_t obs_time;
@@ -125,6 +132,47 @@ int main(int argc, char **argv) {
   (void)(argv); /* todo: accept arguments */
   assert(FIFO_SIZE > RTCM3_MSG_OVERHEAD + RTCM3_MAX_MSG_LEN);
 
+  int opt;
+  while ((opt = getopt(argc, argv, "b:c:l:GRECJS")) != -1) {
+    switch (opt) {
+      case 'b':
+        ParseBiases(optarg);
+        break;
+      case 'c':
+        ParseGlonassCodeBiases(optarg);
+        break;
+      case 'l':
+        ParseGlonassPhaseBiases(optarg);
+        break;
+      case 'G':
+        constellation_mask[CONSTELLATION_GPS] = true;
+        fprintf(stderr, "Disabling Navstar\n");
+        break;
+      case 'R':
+        constellation_mask[CONSTELLATION_GLO] = true;
+        fprintf(stderr, "Disabling Glonass\n");
+        break;
+      case 'E':
+        constellation_mask[CONSTELLATION_GAL] = true;
+        fprintf(stderr, "Disabling Galileo\n");
+        break;
+      case 'C':
+        constellation_mask[CONSTELLATION_BDS] = true;
+        fprintf(stderr, "Disabling Beidou\n");
+        break;
+      case 'J':
+        constellation_mask[CONSTELLATION_QZS] = true;
+        fprintf(stderr, "Disabling QZSS\n");
+        break;
+      case 'S':
+        constellation_mask[CONSTELLATION_SBAS] = true;
+        fprintf(stderr, "Disabling SBAS\n");
+        break;
+      default:
+        break;
+    }
+  }
+
   /* set time from systime, account for UTC<->GPS leap second difference */
   time_t ct_utc_unix = time(NULL);
   gps_time_t noleapsec = time2gps_t(ct_utc_unix);
@@ -193,4 +241,53 @@ int main(int argc, char **argv) {
     assert(numremoved == index);
   }
   return 0;
+}
+
+static void ParseBiases(char *arg) {
+  int n,code;
+  float bias;
+  char *tok = strtok(arg, ",");
+  while (NULL != tok) {
+    n = sscanf(tok, "%d:%f", &code, &bias);
+    if ((n != 2) || (code >= CODE_COUNT)) break;
+    sbp_signal_biases[code] = bias;
+    fprintf(stderr, "Applying %.1f m bias to code %02d\n", bias, code);
+    tok = strtok(NULL, ",");
+  }
+}
+
+static void ParseGlonassCodeBiases(char *arg) {
+  int n, code;
+  float bias_fcn_ratio;
+  char *tok = strtok(arg, ",");
+  while (NULL != tok) {
+    n = sscanf(tok, "%d:%f", &code, &bias_fcn_ratio);
+    if (n != 2) break;
+    if (code == CODE_GLO_L1OF) {
+      sbp_glo_code_bias[0] = bias_fcn_ratio;
+      fprintf(stderr, "Applying %.1f m/fcn to L1OF\n", bias_fcn_ratio);
+    } else if (code == CODE_GLO_L2OF) {
+      sbp_glo_code_bias[1] = bias_fcn_ratio;
+      fprintf(stderr, "Applying %.1f m/fcn to L2OF\n", bias_fcn_ratio);
+    }
+    tok = strtok(NULL, ",");
+  }
+}
+
+static void ParseGlonassPhaseBiases(char *arg) {
+  int n, code;
+  float bias_fcn_ratio;
+  char *tok = strtok(arg, ",");
+  while (NULL != tok) {
+    n = sscanf(tok, "%d:%f", &code, &bias_fcn_ratio);
+    if (n != 2) break;
+    if (code == CODE_GLO_L1OF) {
+      sbp_glo_phase_bias[0] = bias_fcn_ratio;
+      fprintf(stderr, "Applying %.1f circles/fcn to L1OF\n", bias_fcn_ratio);
+    } else if (code == CODE_GLO_L2OF) {
+      sbp_glo_phase_bias[1] = bias_fcn_ratio;
+      fprintf(stderr, "Applying %.1f circles/fcn to L2OF\n", bias_fcn_ratio);
+    }
+    tok = strtok(NULL, ",");
+  }
 }

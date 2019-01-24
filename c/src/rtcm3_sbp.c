@@ -34,6 +34,7 @@
 #include <swiftnav/signal.h>
 
 #include "rtcm3_msm_utils.h"
+#include "biases.h"
 
 static void validate_base_obs_sanity(struct rtcm3_sbp_state *state,
                                      const gps_time_t *obs_time,
@@ -812,8 +813,9 @@ void rtcm3_to_sbp(const rtcm_obs_message *rtcm_obs,
         }
 
         if (rtcm_freq->flags.valid_pr == 1) {
-          sbp_freq->P =
-              (u32)rint(rtcm_freq->pseudorange * MSG_OBS_P_MULTIPLIER);
+          double pseudorange = rtcm_freq->pseudorange;
+          pseudorange += sbp_signal_biases[sbp_freq->sid.code];
+          sbp_freq->P = (u32)rint(pseudorange * MSG_OBS_P_MULTIPLIER);
           sbp_freq->flags |= MSG_OBS_FLAGS_CODE_VALID;
         }
         if (rtcm_freq->flags.valid_cp == 1) {
@@ -1645,8 +1647,9 @@ void rtcm3_msm_to_sbp(const rtcm_msm_message *msg,
         sbp_gnss_signal_t sid;
         const rtcm_msm_signal_data *data = &msg->signals[cell_index];
         bool sid_valid = get_sid_from_msm(&msg->header, sat, sig, &sid, state);
-        bool supported = !unsupported_signal(&sid);
-        if (sid_valid && supported && data->flags.valid_pr &&
+        bool constel_valid = sid_valid && !constellation_mask[code_to_constellation(sid.code)];
+        bool supported = sid_valid && !unsupported_signal(&sid);
+        if (sid_valid && constel_valid && supported && data->flags.valid_pr &&
             data->flags.valid_cp) {
           if (new_sbp_obs->header.n_obs >= MAX_OBS_PER_EPOCH) {
             send_buffer_full_error(state);
@@ -1655,15 +1658,19 @@ void rtcm3_msm_to_sbp(const rtcm_msm_message *msg,
 
           /* get GLO FCN */
           uint8_t glo_fcn = MSM_GLO_FCN_UNKNOWN;
-          bool glo_fcn_valid = msm_get_glo_fcn(&msg->header,
-                                               sat,
-                                               msg->sats[sat].glo_fcn,
-                                               state->glo_sv_id_fcn_map,
-                                               &glo_fcn);
+          msm_get_glo_fcn(&msg->header,
+                          sat,
+                          msg->sats[sat].glo_fcn,
+                          state->glo_sv_id_fcn_map,
+                          &glo_fcn);
 
           double freq;
-          bool freq_valid = msm_signal_frequency(
-              &msg->header, sig, glo_fcn, glo_fcn_valid, &freq);
+          bool freq_valid =
+              msm_signal_frequency(&msg->header, sig, glo_fcn, &freq);
+
+          double code_bias_m, phase_bias_c;
+          msm_glo_fcn_bias(
+              &msg->header, sig, glo_fcn, &code_bias_m, &phase_bias_c);
 
           packed_obs_content_t *sbp_freq =
               &new_sbp_obs->obs[new_sbp_obs->header.n_obs];
@@ -1681,11 +1688,14 @@ void rtcm3_msm_to_sbp(const rtcm_msm_message *msg,
 
           if (data->flags.valid_pr) {
             double pseudorange_m = data->pseudorange_ms * GPS_C / 1000;
+            pseudorange_m += sbp_signal_biases[sbp_freq->sid.code];
+            pseudorange_m += code_bias_m;
             sbp_freq->P = (u32)rint(pseudorange_m * MSG_OBS_P_MULTIPLIER);
             sbp_freq->flags |= MSG_OBS_FLAGS_CODE_VALID;
           }
           if (data->flags.valid_cp && freq_valid) {
             double carrier_phase_cyc = data->carrier_phase_ms * freq / 1000;
+            carrier_phase_cyc += phase_bias_c;
             sbp_freq->L.i = (s32)floor(carrier_phase_cyc);
             u16 frac_part =
                 (u16)rint((carrier_phase_cyc - (double)sbp_freq->L.i) *
@@ -1901,7 +1911,6 @@ static void sbp_obs_to_msm_signal_data(const packed_obs_content_t *sbp_obs,
       msm_signal_frequency(&msg->header,
                            signal_index,
                            sat_data->glo_fcn,
-                           (MSM_GLO_FCN_UNKNOWN != sat_data->glo_fcn),
                            &freq);
 
   if (freq_valid && (0 != (sbp_flags & MSG_OBS_FLAGS_PHASE_VALID))) {
