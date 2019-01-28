@@ -27,6 +27,7 @@
 #include <swiftnav/fifo_byte.h>
 #include <swiftnav/gnss_time.h>
 #include <time.h>
+#include <string.h>
 #include <unistd.h>
 
 /* You may reduce FIFO_SIZE if you need a lower memory footprint. */
@@ -194,3 +195,4 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
+

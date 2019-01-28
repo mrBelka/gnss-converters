@@ -840,6 +840,14 @@ void rtcm3_to_sbp(const rtcm_obs_message *rtcm_obs,
           sbp_freq->lock = rtcm3_encode_lock_time(rtcm_freq->lock);
         }
 
+        fprintf(stderr, "%3d %02d %14.3lf %14.3lf %14.3lf %2d\n",
+          sbp_freq->sid.sat,
+          sbp_freq->sid.code,
+          sbp_freq->P / MSG_OBS_P_MULTIPLIER,
+          sbp_freq->L.i + sbp_freq->L.f / MSG_OBS_LF_MULTIPLIER,
+          sbp_freq->cn0 / MSG_OBS_CN0_MULTIPLIER,
+          sbp_freq->lock);
+
         new_sbp_obs->header.n_obs++;
       }
     }
@@ -1724,6 +1732,15 @@ void rtcm3_msm_to_sbp(const rtcm_msm_message *msg,
             sbp_freq->D.f = (u8)frac_part;
             sbp_freq->flags |= MSG_OBS_FLAGS_DOPPLER_VALID;
           }
+
+          fprintf(stderr, "%3d %02d %14.3lf %14.3lf %14.3lf %14.3lf %2d\n",
+            sbp_freq->sid.sat,
+            sbp_freq->sid.code,
+            sbp_freq->P / MSG_OBS_P_MULTIPLIER,
+            sbp_freq->L.i + sbp_freq->L.f / MSG_OBS_LF_MULTIPLIER,
+            sbp_freq->D.i + sbp_freq->D.f / MSG_OBS_DF_MULTIPLIER,
+            sbp_freq->cn0 / MSG_OBS_CN0_MULTIPLIER,
+            sbp_freq->lock);
 
           new_sbp_obs->header.n_obs++;
         }
