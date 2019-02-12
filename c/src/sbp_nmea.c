@@ -20,6 +20,9 @@
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
 
+static double sbp_gpsdifftime(const sbp_gps_time_t *sbp_end,
+                              const sbp_gps_time_t *sbp_begin);
+
 static bool gpgga_ready(const struct sbp_nmea_state *state) {
   return (state->sbp_utc_time.tow == state->sbp_pos_llh.tow &&
           state->sbp_utc_time.tow == state->sbp_dops.tow &&
@@ -33,8 +36,11 @@ static bool gsa_ready(const struct sbp_nmea_state *state) {
    * (This enables this message also in Time Matched mode, although the list of
    * active satellites will be that of current obs and not the earlier ones that
    * the solution and DOP are based on.) */
-  return state->sbp_utc_time.tow == state->sbp_dops.tow &&
-         state->sbp_utc_time.tow <= state->obs_time.tow &&
+  const sbp_gps_time_t gps_time = {.wn = state->sbp_gps_time.wn,
+                                   .tow = state->sbp_gps_time.tow};
+  return state->sbp_utc_time.tow == state->sbp_gps_time.tow &&
+         state->sbp_utc_time.tow == state->sbp_dops.tow &&
+         sbp_gpsdifftime(&gps_time, &state->obs_time) <= 0 &&
          state->obs_seq_count == state->obs_seq_total - 1 &&
          state->sbp_utc_time.tow != state->gsa_last_tow;
 }
@@ -157,7 +163,8 @@ void unpack_obs_header(const observation_header_t *header,
   *count = (header->n_obs & MSG_OBS_HEADER_SEQ_MASK);
 }
 
-double sbp_gpsdifftime(sbp_gps_time_t *sbp_end, sbp_gps_time_t *sbp_begin) {
+static double sbp_gpsdifftime(const sbp_gps_time_t *sbp_end,
+                              const sbp_gps_time_t *sbp_begin) {
   gps_time_t end;
   gps_time_t begin;
   end.wn = sbp_end->wn;
