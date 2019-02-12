@@ -168,9 +168,9 @@ static double sbp_gpsdifftime(const sbp_gps_time_t *sbp_end,
   gps_time_t end;
   gps_time_t begin;
   end.wn = sbp_end->wn;
-  end.tow = sbp_end->tow;
+  end.tow = (double)sbp_end->tow / SECS_MS;
   begin.wn = sbp_begin->wn;
-  begin.tow = sbp_begin->tow;
+  begin.tow = (double)sbp_begin->tow / SECS_MS;
   return gpsdifftime(&end, &begin);
 }
 
