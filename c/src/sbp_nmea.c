@@ -28,11 +28,14 @@ static bool gpgga_ready(const struct sbp_nmea_state *state) {
 }
 
 static bool gsa_ready(const struct sbp_nmea_state *state) {
-  /* ready to send when the DOP and obs messages time stamps match, and the
-   * final obs message in the sequence has been received */
-  return state->obs_seq_count == state->obs_seq_total - 1 &&
-         state->sbp_utc_time.tow == state->sbp_dops.tow &&
-         state->sbp_utc_time.tow == state->obs_time.tow &&
+  /* Ready to send when the DOP timestamp matches with current epoch, and there
+   * is a full obs message sequence not older than the solution epoch.
+   * (This enables this message also in Time Matched mode, although the list of
+   * active satellites will be that of current obs and not the earlier ones that
+   * the solution and DOP are based on.) */
+  return state->sbp_utc_time.tow == state->sbp_dops.tow &&
+         state->sbp_utc_time.tow <= state->obs_time.tow &&
+         state->obs_seq_count == state->obs_seq_total - 1 &&
          state->sbp_utc_time.tow != state->gsa_last_tow;
 }
 
