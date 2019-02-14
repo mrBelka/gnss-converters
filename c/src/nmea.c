@@ -116,12 +116,12 @@ typedef enum talker_id_e {
   } while (0)
 
 /** Output NMEA sentence.
-
- * \param s The NMEA sentence to output.
- * \param size This is the C-string size, not including the null character
+ *
+ * \param state        sbp2nmea context.
+ * \param sentence     The NMEA sentence to output.
  */
 static void nmea_output(const struct sbp_nmea_state *state, char *sentence) {
-  state->cb_sbp_to_nmea(sentence);
+  sbp2nmea_to_str(state, sentence);
 }
 
 /** Calculate and append the checksum of an NMEA sentence.
@@ -312,10 +312,13 @@ void send_gpgga(const struct sbp_nmea_state *state) {
      and NOT
      $GPGGA,hhmmss.ss,1560.000000,...
    */
-  const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
-  const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
-  const msg_age_corrections_t *sbp_age = &state->sbp_age_corr;
-  const msg_dops_t *sbp_dops = &state->sbp_dops;
+  const msg_pos_llh_t *sbp_pos_llh =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+  const msg_utc_time_t *sbp_utc_time =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
+  const msg_age_corrections_t *sbp_age =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_AGE_CORR);
+  const msg_dops_t *sbp_dops = sbp2nmea_message_get(state, SBP2NMEA_SBP_DOPS);
 
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
   double lon = fabs(round(sbp_pos_llh->lon * 1e8) / 1e8);
@@ -370,7 +373,7 @@ void send_gpgga(const struct sbp_nmea_state *state) {
     NMEA_SENTENCE_PRINTF(
         "%.1f,%04d",
         sbp_age->age * 0.1,
-        state->base_sender_id & 0x3FF); /* ID range is 0000 to 1023 */
+        sbp2nmea_base_id_get(state) & 0x3FF); /* ID range is 0000 to 1023 */
   } else {
     NMEA_SENTENCE_PRINTF(",");
   }
@@ -523,9 +526,9 @@ void send_gsa_print(u16 *prns,
  */
 void send_gsa(const struct sbp_nmea_state *state) {
   assert(state);
-  const msg_dops_t *sbp_dops = &state->sbp_dops;
-  const u8 n_obs = state->num_obs;
-  const sbp_gnss_signal_t *nav_sids = state->nav_sids;
+  const msg_dops_t *sbp_dops = sbp2nmea_message_get(state, SBP2NMEA_SBP_DOPS);
+  const u8 n_obs = sbp2nmea_num_obs_get(state);
+  const sbp_gnss_signal_t *nav_sids = sbp2nmea_nav_sids_get(state);
 
   u16 prns[TALKER_ID_COUNT][GSA_MAX_SV] = {{0}};
   u8 num_prns[TALKER_ID_COUNT] = {0};
@@ -636,9 +639,12 @@ static void calc_cog_sog(const msg_vel_ned_t *sbp_vel_ned,
  * \param utc_time     Pointer to UTC time
  */
 void send_gprmc(const struct sbp_nmea_state *state) {
-  const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
-  const msg_vel_ned_t *sbp_vel_ned = &state->sbp_vel_ned;
-  const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
+  const msg_pos_llh_t *sbp_pos_llh =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+  const msg_vel_ned_t *sbp_vel_ned =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_VEL_NED);
+  const msg_utc_time_t *sbp_utc_time =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
   /* See the relevant comment for the similar code in nmea_gpgga() function
      for the reasoning behind (... * 1e8 / 1e8) trick */
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
@@ -710,8 +716,10 @@ void send_gprmc(const struct sbp_nmea_state *state) {
  * \param sbp_vel_ned Pointer to sbp vel ned struct.
  */
 void send_gpvtg(const struct sbp_nmea_state *state) {
-  const msg_vel_ned_t *sbp_vel_ned = &state->sbp_vel_ned;
-  const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
+  const msg_pos_llh_t *sbp_pos_llh =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+  const msg_vel_ned_t *sbp_vel_ned =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_VEL_NED);
 
   double cog, sog_knots, sog_kph;
   calc_cog_sog(sbp_vel_ned, &cog, &sog_knots, &sog_kph);
@@ -755,7 +763,8 @@ void send_gpvtg(const struct sbp_nmea_state *state) {
  *
  */
 void send_gphdt(const struct sbp_nmea_state *state) {
-  const msg_baseline_heading_t *sbp_baseline_heading = &state->sbp_heading;
+  const msg_baseline_heading_t *sbp_baseline_heading =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_HDG);
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPHDT,"); /* Command */
   if ((POSITION_MODE_MASK & sbp_baseline_heading->flags) ==
@@ -778,8 +787,10 @@ void send_gphdt(const struct sbp_nmea_state *state) {
  * \param sbp_utc_time Pointer to sbp UTC time.
  */
 void send_gpgll(const struct sbp_nmea_state *state) {
-  const msg_pos_llh_t *sbp_pos_llh = &state->sbp_pos_llh;
-  const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
+  const msg_pos_llh_t *sbp_pos_llh =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+  const msg_utc_time_t *sbp_utc_time =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
   /* See the relevant comment for the similar code in nmea_gpgga() function
      for the reasoning behind (... * 1e8 / 1e8) trick */
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
@@ -829,7 +840,8 @@ void send_gpgll(const struct sbp_nmea_state *state) {
  * \param sbp_utc_time Pointer to sbp UTC time
  */
 void send_gpzda(const struct sbp_nmea_state *state) {
-  const msg_utc_time_t *sbp_utc_time = &state->sbp_utc_time;
+  const msg_utc_time_t *sbp_utc_time =
+      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
 
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPZDA,"); /* Command */
