@@ -120,7 +120,7 @@ typedef enum talker_id_e {
  * \param state        sbp2nmea context.
  * \param sentence     The NMEA sentence to output.
  */
-static void nmea_output(const struct sbp_nmea_state *state, char *sentence) {
+static void nmea_output(const sbp2nmea_t *state, char *sentence) {
   sbp2nmea_to_str(state, sentence);
 }
 
@@ -299,7 +299,7 @@ void get_utc_time_string(bool time,
  *
  * \param state Current SBP2NMEA state
  */
-void send_gpgga(const struct sbp_nmea_state *state) {
+void send_gpgga(const sbp2nmea_t *state) {
   /* GGA sentence is formed by splitting latitude and longitude
      into degrees and minutes parts and then printing them separately
      using printf. Before doing the split we want to take care of
@@ -313,12 +313,12 @@ void send_gpgga(const struct sbp_nmea_state *state) {
      $GPGGA,hhmmss.ss,1560.000000,...
    */
   const msg_pos_llh_t *sbp_pos_llh =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_POS_LLH);
   const msg_utc_time_t *sbp_utc_time =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_UTC_TIME);
   const msg_age_corrections_t *sbp_age =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_AGE_CORR);
-  const msg_dops_t *sbp_dops = sbp2nmea_message_get(state, SBP2NMEA_SBP_DOPS);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_AGE_CORR);
+  const msg_dops_t *sbp_dops = sbp2nmea_msg_get(state, SBP2NMEA_SBP_DOPS);
 
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
   double lon = fabs(round(sbp_pos_llh->lon * 1e8) / 1e8);
@@ -472,7 +472,7 @@ void send_gsa_print(u16 *prns,
                     const u8 num_prns,
                     const msg_dops_t *sbp_dops,
                     const char *talker,
-                    const struct sbp_nmea_state *state) {
+                    const sbp2nmea_t *state) {
   assert(prns);
   assert(sbp_dops);
 
@@ -524,9 +524,9 @@ void send_gsa_print(u16 *prns,
  *
  * \param sbp_nmea_state      Pointer to the converter state
  */
-void send_gsa(const struct sbp_nmea_state *state) {
+void send_gsa(const sbp2nmea_t *state) {
   assert(state);
-  const msg_dops_t *sbp_dops = sbp2nmea_message_get(state, SBP2NMEA_SBP_DOPS);
+  const msg_dops_t *sbp_dops = sbp2nmea_msg_get(state, SBP2NMEA_SBP_DOPS);
   const u8 n_obs = sbp2nmea_num_obs_get(state);
   const sbp_gnss_signal_t *nav_sids = sbp2nmea_nav_sids_get(state);
 
@@ -638,13 +638,13 @@ static void calc_cog_sog(const msg_vel_ned_t *sbp_vel_ned,
  * \param sbp_msg_time Pointer to sbp gps time struct
  * \param utc_time     Pointer to UTC time
  */
-void send_gprmc(const struct sbp_nmea_state *state) {
+void send_gprmc(const sbp2nmea_t *state) {
   const msg_pos_llh_t *sbp_pos_llh =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_POS_LLH);
   const msg_vel_ned_t *sbp_vel_ned =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_VEL_NED);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_VEL_NED);
   const msg_utc_time_t *sbp_utc_time =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_UTC_TIME);
   /* See the relevant comment for the similar code in nmea_gpgga() function
      for the reasoning behind (... * 1e8 / 1e8) trick */
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
@@ -715,11 +715,11 @@ void send_gprmc(const struct sbp_nmea_state *state) {
  *
  * \param sbp_vel_ned Pointer to sbp vel ned struct.
  */
-void send_gpvtg(const struct sbp_nmea_state *state) {
+void send_gpvtg(const sbp2nmea_t *state) {
   const msg_pos_llh_t *sbp_pos_llh =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_POS_LLH);
   const msg_vel_ned_t *sbp_vel_ned =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_VEL_NED);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_VEL_NED);
 
   double cog, sog_knots, sog_kph;
   calc_cog_sog(sbp_vel_ned, &cog, &sog_knots, &sog_kph);
@@ -762,9 +762,9 @@ void send_gpvtg(const struct sbp_nmea_state *state) {
  * NMEA HDT contains Heading.
  *
  */
-void send_gphdt(const struct sbp_nmea_state *state) {
+void send_gphdt(const sbp2nmea_t *state) {
   const msg_baseline_heading_t *sbp_baseline_heading =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_HDG);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_HDG);
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPHDT,"); /* Command */
   if ((POSITION_MODE_MASK & sbp_baseline_heading->flags) ==
@@ -786,11 +786,11 @@ void send_gphdt(const struct sbp_nmea_state *state) {
  * \param sbp_msg_time Pointer to sbp gps time struct.
  * \param sbp_utc_time Pointer to sbp UTC time.
  */
-void send_gpgll(const struct sbp_nmea_state *state) {
+void send_gpgll(const sbp2nmea_t *state) {
   const msg_pos_llh_t *sbp_pos_llh =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_POS_LLH);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_POS_LLH);
   const msg_utc_time_t *sbp_utc_time =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_UTC_TIME);
   /* See the relevant comment for the similar code in nmea_gpgga() function
      for the reasoning behind (... * 1e8 / 1e8) trick */
   double lat = fabs(round(sbp_pos_llh->lat * 1e8) / 1e8);
@@ -839,9 +839,9 @@ void send_gpgll(const struct sbp_nmea_state *state) {
  *
  * \param sbp_utc_time Pointer to sbp UTC time
  */
-void send_gpzda(const struct sbp_nmea_state *state) {
+void send_gpzda(const sbp2nmea_t *state) {
   const msg_utc_time_t *sbp_utc_time =
-      sbp2nmea_message_get(state, SBP2NMEA_SBP_UTC_TIME);
+      sbp2nmea_msg_get(state, SBP2NMEA_SBP_UTC_TIME);
 
   NMEA_SENTENCE_START(40);
   NMEA_SENTENCE_PRINTF("$GPZDA,"); /* Command */

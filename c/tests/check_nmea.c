@@ -246,24 +246,24 @@ void sbp_init(sbp_state_t *sbp_state, void *ctx) {
 }
 
 void test_NMEA(const char *filename, void (*cb_sbp_to_nmea)(u8 msg[])) {
-  sbp2nmea_t *state = sbp2nmea_init(cb_sbp_to_nmea);
-  sbp2nmea_base_id_set(state, 33);
-  sbp2nmea_soln_freq_set(state, 10);
-  sbp2nmea_rate_set(state, 1, SBP2NMEA_NMEA_GGA);
-  sbp2nmea_rate_set(state, 10, SBP2NMEA_NMEA_RMC);
-  sbp2nmea_rate_set(state, 10, SBP2NMEA_NMEA_VTG);
-  /*sbp2nmea_set_rate(state, 1, SBP2NMEA_NMEA_HDT);*/
-  sbp2nmea_rate_set(state, 10, SBP2NMEA_NMEA_GLL);
-  sbp2nmea_rate_set(state, 10, SBP2NMEA_NMEA_ZDA);
-  sbp2nmea_rate_set(state, 1, SBP2NMEA_NMEA_GSA);
+  sbp2nmea_t state = {0};
+  sbp2nmea_init(&state, cb_sbp_to_nmea);
+  sbp2nmea_base_id_set(&state, 33);
+  sbp2nmea_soln_freq_set(&state, 10);
+  sbp2nmea_rate_set(&state, 1, SBP2NMEA_NMEA_GGA);
+  sbp2nmea_rate_set(&state, 10, SBP2NMEA_NMEA_RMC);
+  sbp2nmea_rate_set(&state, 10, SBP2NMEA_NMEA_VTG);
+  /*sbp2nmea_rate_set(&state, 1, SBP2NMEA_NMEA_HDT);*/
+  sbp2nmea_rate_set(&state, 10, SBP2NMEA_NMEA_GLL);
+  sbp2nmea_rate_set(&state, 10, SBP2NMEA_NMEA_ZDA);
+  sbp2nmea_rate_set(&state, 1, SBP2NMEA_NMEA_GSA);
 
   sbp_state_t sbp_state_;
-  sbp_init(&sbp_state_, state);
+  sbp_init(&sbp_state_, &state);
 
   FILE *fp = fopen(filename, "rb");
   if (fp == NULL) {
     fprintf(stderr, "Can't open input file! %s\n", filename);
-    sbp2nmea_destroy(&state);
     exit(1);
   }
   sbp_state_set_io_context(&sbp_state_, fp);
@@ -271,7 +271,6 @@ void test_NMEA(const char *filename, void (*cb_sbp_to_nmea)(u8 msg[])) {
     sbp_process(&sbp_state_, &read_file);
   }
   fclose(fp);
-  sbp2nmea_destroy(&state);
   return;
 }
 

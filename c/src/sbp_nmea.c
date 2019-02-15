@@ -23,35 +23,9 @@
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
 
-typedef struct nmea_state_entry {
-  uint32_t last_tow;
-  int rate;
-} nmea_state_entry_t;
-
-typedef struct sbp_state_entry {
-  void *msg;
-} sbp_state_entry_t;
-
-struct sbp_nmea_state {
-  uint8_t num_obs;
-  uint8_t obs_seq_count;
-  uint8_t obs_seq_total;
-  sbp_gnss_signal_t nav_sids[MAX_SATS];
-  sbp_gps_time_t obs_time;
-
-  uint16_t base_sender_id;
-
-  nmea_state_entry_t nmea_state[SBP2NMEA_NMEA_CNT];
-  sbp_state_entry_t sbp_state[SBP2NMEA_SBP_CNT];
-
-  float soln_freq;
-
-  void (*cb_sbp_to_nmea)();
-};
-
 struct nmea_meta_entry {
   uint8_t tow_mask;
-  void (*send)(const struct sbp_nmea_state *state);
+  void (*send)(const sbp2nmea_t *);
 } nmea_meta[SBP2NMEA_NMEA_CNT] = {
     [SBP2NMEA_NMEA_GGA] = {.tow_mask = (1 << SBP2NMEA_SBP_POS_LLH) |
                                        (1 << SBP2NMEA_SBP_DOPS) |
@@ -94,9 +68,8 @@ struct sbp_meta_entry {
                           .offset_tow = offsetof(msg_baseline_heading_t, tow)},
 };
 
-static uint32_t get_tow(const struct sbp_nmea_state *state,
-                        sbp2nmea_sbp_id_t id) {
-  return *(uint32_t *)(state->sbp_state[id].msg + sbp_meta[id].offset_tow);
+static uint32_t get_tow(const sbp2nmea_t *state, sbp2nmea_sbp_id_t id) {
+  return *(uint32_t *)(sbp2nmea_msg_get(state, id) + sbp_meta[id].offset_tow);
 }
 
 static double sbp_gpsdifftime(const sbp_gps_time_t *sbp_end,
@@ -110,23 +83,21 @@ static double sbp_gpsdifftime(const sbp_gps_time_t *sbp_end,
   return gpsdifftime(&end, &begin);
 }
 
-static bool nmea_ready(const struct sbp_nmea_state *state,
-                       sbp2nmea_nmea_id_t nmea_id) {
+static bool nmea_ready(const sbp2nmea_t *state, sbp2nmea_nmea_id_t nmea_id) {
   if (state->nmea_state[nmea_id].last_tow ==
       get_tow(state, SBP2NMEA_SBP_UTC_TIME)) {
     return false;
   }
 
   if (SBP2NMEA_NMEA_GSA == nmea_id) {
-    if (NULL == state->sbp_state[SBP2NMEA_SBP_GPS_TIME].msg) {
+    msg_gps_time_t *msg = sbp2nmea_msg_get(state, SBP2NMEA_SBP_GPS_TIME);
+    if (NULL == msg) {
       return false;
     }
 
     if (state->obs_seq_count == state->obs_seq_total - 1) {
       return false;
     }
-
-    msg_gps_time_t *msg = state->sbp_state[SBP2NMEA_SBP_GPS_TIME].msg;
 
     const sbp_gps_time_t gps_time = {.wn = msg->wn, .tow = msg->tow};
     if (sbp_gpsdifftime(&gps_time, &state->obs_time) > 0) {
@@ -146,7 +117,7 @@ static bool nmea_ready(const struct sbp_nmea_state *state,
 }
 
 /* Send all the NMEA messages that have become ready to send */
-static void check_nmea_send(struct sbp_nmea_state *state) {
+static void check_nmea_send(sbp2nmea_t *state) {
   const u32 tow = get_tow(state, SBP2NMEA_SBP_UTC_TIME);
   const float freq = state->soln_freq;
 
@@ -169,7 +140,7 @@ static void check_nmea_send(struct sbp_nmea_state *state) {
 void sbp2nmea(sbp2nmea_t *state,
               const void *sbp_msg,
               sbp2nmea_sbp_id_t sbp_id) {
-  memcpy(state->sbp_state[sbp_id].msg, sbp_msg, sbp_meta[sbp_id].msg_size);
+  memcpy(sbp2nmea_msg_get(state, sbp_id), sbp_msg, sbp_meta[sbp_id].msg_size);
   check_nmea_send(state);
 }
 
@@ -230,8 +201,8 @@ void sbp2nmea_to_str(const sbp2nmea_t *state, char *sentence) {
   state->cb_sbp_to_nmea(sentence);
 }
 
-void *sbp2nmea_message_get(const sbp2nmea_t *state, sbp2nmea_sbp_id_t id) {
-  return state->sbp_state[id].msg;
+void *sbp2nmea_msg_get(const sbp2nmea_t *state, sbp2nmea_sbp_id_t id) {
+  return (void *)&state->sbp_state[id].msg.begin;
 }
 
 void sbp2nmea_rate_set(sbp2nmea_t *state, int rate, sbp2nmea_nmea_id_t id) {
@@ -242,24 +213,7 @@ void sbp2nmea_soln_freq_set(sbp2nmea_t *state, float soln_freq) {
   state->soln_freq = soln_freq;
 }
 
-sbp2nmea_t *sbp2nmea_init(void (*cb_sbp_to_nmea)(u8 msg_id[])) {
-  sbp2nmea_t *state = calloc(1, sizeof(sbp2nmea_t));
-
-  for (sbp2nmea_sbp_id_t sbp_id = 0; sbp_id < SBP2NMEA_SBP_CNT; ++sbp_id) {
-    state->sbp_state[sbp_id].msg = calloc(1, sbp_meta[sbp_id].msg_size);
-  }
-
+void sbp2nmea_init(sbp2nmea_t *state, void (*cb_sbp_to_nmea)(u8 msg_id[])) {
+  memset(state, 0, sizeof(*state));
   state->cb_sbp_to_nmea = cb_sbp_to_nmea;
-
-  return state;
-}
-
-void sbp2nmea_destroy(sbp2nmea_t **state) {
-  for (sbp2nmea_sbp_id_t sbp_id = 0; sbp_id < SBP2NMEA_SBP_CNT; ++sbp_id) {
-    free((*state)->sbp_state[sbp_id].msg);
-  }
-
-  free(*state);
-
-  *state = NULL;
 }

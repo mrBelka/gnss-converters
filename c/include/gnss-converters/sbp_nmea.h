@@ -43,14 +43,48 @@ typedef enum sbp2nmea_sbp_id {
   SBP2NMEA_SBP_CNT = 7,
 } sbp2nmea_sbp_id_t;
 
+typedef struct nmea_state_entry {
+  uint32_t last_tow;
+  int rate;
+} nmea_state_entry_t;
+
+typedef union sbp2nmea_msg {
+  uint8_t begin;
+  msg_gps_time_t sbp_gps_time;
+  msg_utc_time_t sbp_utc_time;
+  msg_pos_llh_t sbp_pos_llh;
+  msg_vel_ned_t sbp_vel_ned;
+  msg_dops_t sbp_dops;
+  msg_age_corrections_t sbp_age_corr;
+  msg_baseline_heading_t sbp_heading;
+} sbp2nmea_msg_t;
+
+typedef struct sbp_state_entry {
+  sbp2nmea_msg_t msg;
+} sbp_state_entry_t;
+
+typedef struct sbp2nmea_state {
+  uint8_t num_obs;
+  uint8_t obs_seq_count;
+  uint8_t obs_seq_total;
+  sbp_gnss_signal_t nav_sids[MAX_SATS];
+  sbp_gps_time_t obs_time;
+
+  uint16_t base_sender_id;
+
+  nmea_state_entry_t nmea_state[SBP2NMEA_NMEA_CNT];
+  sbp_state_entry_t sbp_state[SBP2NMEA_SBP_CNT];
+
+  float soln_freq;
+
+  void (*cb_sbp_to_nmea)();
+} sbp2nmea_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct sbp_nmea_state sbp2nmea_t;
-
-sbp2nmea_t *sbp2nmea_init(void (*cb_sbp_to_nmea)(u8 msg_id[]));
-void sbp2nmea_destroy(sbp2nmea_t **state);
+void sbp2nmea_init(sbp2nmea_t *state, void (*cb_sbp_to_nmea)(u8 msg_id[]));
 
 void sbp2nmea(sbp2nmea_t *state, const void *sbp_msg, sbp2nmea_sbp_id_t id);
 void sbp2nmea_obs(sbp2nmea_t *state, const msg_obs_t *sbp_obs, uint8_t num_obs);
@@ -63,7 +97,7 @@ const sbp_gnss_signal_t *sbp2nmea_nav_sids_get(const sbp2nmea_t *state);
 
 void sbp2nmea_to_str(const sbp2nmea_t *state, char *sentence);
 
-void *sbp2nmea_message_get(const sbp2nmea_t *state, sbp2nmea_sbp_id_t id);
+void *sbp2nmea_msg_get(const sbp2nmea_t *state, sbp2nmea_sbp_id_t id);
 
 void sbp2nmea_rate_set(sbp2nmea_t *state, int rate, sbp2nmea_nmea_id_t id);
 
